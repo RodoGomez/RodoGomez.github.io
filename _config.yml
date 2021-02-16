@@ -1,1 +1,87 @@
-theme: jekyll-theme-time-machine
+# Welcome to Jekyll!
+#
+# This config file is meant for settings that affect your whole blog, values
+# which you are expected to set up once and rarely edit after that. If you find
+# yourself editing this file very often, consider using Jekyll's data files
+# feature for the data you need to update frequently.
+#
+# For technical reasons, this file is *NOT* reloaded automatically when you use
+# 'bundle exec jekyll serve'. If you change this file, please restart the server process.
+#
+# If you need help with YAML syntax, here are some quick references for you: 
+# https://learn-the-web.algonquindesign.ca/topics/markdown-yaml-cheat-sheet/#yaml
+# https://learnxinyminutes.com/docs/yaml/
+#
+# Site settings
+# These are used to personalize your new site. If you look in the HTML files,
+# you will see them accessed via {{ site.title }}, {{ site.email }}, and so on.
+# You can create any custom variable you would like, and they will be accessible
+# in the templates via {{ site.myvariable }}.
+
+title: RodWaRE
+
+author:
+  name     : "Rodo Gómez"
+  avatar   : "/assets/images/mrRobot.jpg"
+  bio      : "Embedded Software Engineer. Interested in Offensive CyberSec, reverse engineering, vulnerability research, hardware hacking, Linux Kernel and OS hacking."
+  links:
+    - label: "Twitter"
+      icon: "fab fa-fw fa-twitter-square"
+      url: "https://twitter.com/_R0DWaRE"
+    - label: "GitHub"
+      icon: "fab fa-fw fa-github"
+      url: "https://github.com/RodoGomez"
+    - label: "LinkedIn"
+      icon: "fab fa-fw fa-linkedin"
+      url: "https://www.linkedin.com/in/rodolfo-g%C3%B3mez-zurita-06a1a8163/"
+
+minimal_mistakes_skin: "dark"
+
+paginator: 10
+include: ["_pages"]
+
+defaults:
+  # _posts
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: single
+      show_date: true
+      read_time: true
+      related: true
+      permalink: 
+
+atom_feed:
+  hide: true
+
+search: true
+
+
+# Build settings
+theme: minimal-mistakes-jekyll
+plugins:
+  - jekyll-feed
+  - jekyll-include-cache
+# Exclude from processing.
+# The following items will not be processed, by default.
+# Any item listed under the `exclude:` key here will be automatically added to
+# the internal "default list".
+#
+# Excluded items can be processed by explicitly listing the directories or
+# their entries' file path in the `include:` list.
+#
+exclude:
+#  - .sass-cache/
+#  - .jekyll-cache/
+#  - gemfiles/
+  - Gemfile
+  - Gemfile.lock
+#  - node_modules/
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+
+keep_files:
+  - .git

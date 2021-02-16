@@ -58,6 +58,9 @@ atom_feed:
 search: true
 
 
+repository: RodoGomez/RodoGomez.github.io
+
+
 # Build settings
 remote_theme: mmistakes/minimal-mistakes@4.22.0
 plugins:

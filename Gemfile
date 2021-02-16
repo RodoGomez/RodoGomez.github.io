@@ -12,6 +12,7 @@ source "https://rubygems.org"
 # Manually stuff added.
 gem 'jekyll-include-cache', group: :jekyll_plugins
 gem "minimal-mistakes-jekyll"
+
 gem "jekyll-github-metadata"
 
 # This is the default theme for new Jekyll sites. You may change this to anything you like.

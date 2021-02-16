@@ -4,7 +4,8 @@ _site
 .jekyll-metadata
 vendor
 .bundle
-_post/template
+template
 Gemfile.lock
 TODO_LIST
+Gemfile
 

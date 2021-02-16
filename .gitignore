@@ -4,5 +4,6 @@ _site
 .jekyll-metadata
 vendor
 .bundle
+.bundle/config
 _post/template
 

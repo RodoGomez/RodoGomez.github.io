@@ -1,1 +1,201 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2021-02-15T23:32:13-06:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">RodWaRE</title><subtitle>Blog</subtitle><author><name>Rodo Gómez</name></author></feed>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2021-02-22T15:50:58-06:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">RodWaRE</title><subtitle>Blog</subtitle><author><name>Rodo Gómez</name></author><entry><title type="html">Radare2: Basic workflow and usage - Part 1</title><link href="http://localhost:4000/radare2-basic-workflow-and-usage" rel="alternate" type="text/html" title="Radare2: Basic workflow and usage - Part 1" /><published>2021-02-22T15:45:00-06:00</published><updated>2021-02-22T15:45:00-06:00</updated><id>http://localhost:4000/radare2-basic-wf-p1</id><content type="html" xml:base="http://localhost:4000/radare2-basic-workflow-and-usage">&lt;p&gt;This is the first post out of two that describes the usage of Radare2 to perform basic tasks that relate to binary analysis. That way, instead of explaining what a bunch of Radare commands do, this post goes through a basic workflow from opening a binary file, gather basic information about it, dissasemble it, explaining and working with the different modes that Radare2 offers and explore the disassembled binary.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;NOTE:&lt;/strong&gt; Debugging a binary file deserves its own post so it will be covered in a future post.&lt;/p&gt;
+
+&lt;h2 id=&quot;lets-begin-whats-radare2&quot;&gt;Let’s begin: What’s Radare2?&lt;/h2&gt;
+
+&lt;p&gt;Radare2, also known as &lt;strong&gt;r2&lt;/strong&gt;, is the integration of a set of Unix-like, &lt;strong&gt;open source&lt;/strong&gt;, tools to perform binary analysis from different standpoints of view. As any &lt;em&gt;Unix-like&lt;/em&gt; application, r2 provides a &lt;strong&gt;command-line inteface&lt;/strong&gt; to interact with.&lt;/p&gt;
+
+&lt;p&gt;There exist GUIs such as &lt;a href=&quot;https://github.com/rizinorg/cutter&quot;&gt;Cutter&lt;/a&gt;, which is powered by &lt;a href=&quot;https://github.com/rizinorg/rizin&quot;&gt;Rizin&lt;/a&gt; (a fork of r2 focused on usability).&lt;/p&gt;
+
+&lt;p&gt;Because of its capabilities, r2 can be seen as:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;A reverse engineering framework.&lt;/li&gt;
+  &lt;li&gt;A forensics tool for binaries.&lt;/li&gt;
+  &lt;li&gt;A debugging tool.&lt;/li&gt;
+  &lt;li&gt;An exploit development framework.&lt;/li&gt;
+  &lt;li&gt;and much more…&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;You can get r2 from its &lt;a href=&quot;https://github.com/radareorg/radare2&quot;&gt;Official GitHub repo&lt;/a&gt;. Instructions about how to clone it, install it and set it up can be found there.&lt;/p&gt;
+
+&lt;p&gt;If you wish to read a more extended documentation about r2, you can go through its &lt;a href=&quot;https://book.rada.re/&quot;&gt;Official book&lt;/a&gt; as well.&lt;/p&gt;
+
+&lt;h2 id=&quot;before-we-jump-into-it&quot;&gt;Before we jump into it:&lt;/h2&gt;
+
+&lt;p&gt;For this series of posts, we are going to use the following simple C program:&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;n&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mul&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+ 
+&lt;span class=&quot;n&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(){&lt;/span&gt; 
+    &lt;span class=&quot;n&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mul&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;c&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+ 
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0xdefea7&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;&lt;strong&gt;NOTE:&lt;/strong&gt; In this series of posts we will be working with x86 binaries under the Linux OS so, the code above was compiled with the following command:&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;err&quot;&gt;$&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;gcc&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;m32&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;o&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;post&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sample&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;post&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sample&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;c&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;Where &lt;em&gt;-m32&lt;/em&gt; is the compilation flag used to specify that we want gcc to compile our code for x86 architecture.&lt;/p&gt;
+
+&lt;p&gt;So we have now an x86 binary ready to be analyzed with r2.&lt;/p&gt;
+
+&lt;h2 id=&quot;opening-a-binary-with-radare2&quot;&gt;Opening a binary with Radare2&lt;/h2&gt;
+
+&lt;p&gt;As mentioned before, r2 is a set of &lt;em&gt;Unix-like&lt;/em&gt; tools, so from this point everything is going to be achieved with commands.&lt;/p&gt;
+
+&lt;p&gt;The simpliest way to open a binary with r2 is by just providing to r2 command the name of our binary file without any other fuse (aka flag):&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;err&quot;&gt;$&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;radare2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;file&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;or&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;err&quot;&gt;$&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;file&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;By doing it this way, r2 is just going to open the binary file without performing any sort of analysis to it (more on this below).&lt;/p&gt;
+
+&lt;p&gt;To see the different fuses that r2 accepts when launching it, you can use the command:&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;err&quot;&gt;$&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;h&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;The fuse that we are going to be using the most when working with r2 is -A, that way the command to open our file is:&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;err&quot;&gt;$&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;A&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;post&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sample&lt;/span&gt; &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;When reading the help for the commands available, we see that for the fuse -A the help says that &lt;em&gt;“run aaa command to analyze all referenced code”&lt;/em&gt;. This means that first it opens the binary with radare2 and then it runs the r2 command &lt;em&gt;aaa&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;One of the outputs from running &lt;em&gt;aaa&lt;/em&gt; command is the creation of flags (as radare2 call them). With aaa command, r2 goes through the provided binary and for everything that founds to be interesting creates a flag to reference it.&lt;/p&gt;
+
+&lt;p&gt;For example, it creates flags for functions, variables, sections and so on. That’s the way r2 makes a ‘recognition’ of the binary and its properties.&lt;/p&gt;
+
+&lt;p&gt;It also gathers useful information about the binary in question, such as metadata associated with it, compilation information such as compilation flags used, compiler version, timestamps, binary size, sections, the system used for the creation of the binary, exploitation mitigations status, permissions and more.&lt;/p&gt;
+
+&lt;p&gt;Notice that you can get the same result by opening the file without the -A flag and then run the &lt;em&gt;aaa&lt;/em&gt; command manually once you are in r2.&lt;/p&gt;
+
+&lt;p&gt;Once we open our file, we get the following result:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/ss1.png&quot; alt=&quot;r2 -A ./post-sample&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The output that is displayed is the result of the option -A.&lt;/p&gt;
+
+&lt;h2 id=&quot;radare2-modes-of-operation&quot;&gt;Radare2 modes of operation&lt;/h2&gt;
+
+&lt;p&gt;In general terms, we could say that Radare2 has &lt;strong&gt;2 modes&lt;/strong&gt; of operation:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Command mode&lt;/li&gt;
+  &lt;li&gt;Visual mode&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Command mode:&lt;/strong&gt; This is the default mode within r2. When in this mode, &lt;strong&gt;all&lt;/strong&gt; r2 commands are available.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Visual mode:&lt;/strong&gt; This mode provides a set of different capabilities in which you can see and interact with the binary and its information. As its name suggests, the information is outputed in a more visual and graphical way.&lt;/p&gt;
+
+&lt;p&gt;There are several differences of how each mode works, commands, options and so on, but &lt;strong&gt;the most important difference&lt;/strong&gt; that you have to get in mind is that &lt;strong&gt;the available commands between modes differ in the total number of them and what they do.&lt;/strong&gt; In command mode, all r2 commands are available whereas in visual mode, there are less commands available but, &lt;strong&gt;there are commands that perform a different thing between modes.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;In other words, in visual mode you have a set of commands that are less than the ones available in command mode, some commands do the same in both modes, but there are commands that in visual mode do a total different thing.&lt;/p&gt;
+
+&lt;p&gt;Understanding that and having it in mind will save you several mistakes and time :D&lt;/p&gt;
+
+&lt;p&gt;We are going to start with command mode and then we’ll move to visual mode (which is the mode that I actually use the most).&lt;/p&gt;
+
+&lt;h2 id=&quot;working-in-command-mode&quot;&gt;Working in command mode&lt;/h2&gt;
+
+&lt;p&gt;Once we open our binary, the default mode is the command mode. You can see that an hex number appears in the r2 promt, that hex number (which varies between platforms such as Windows, Linux, etc) is our current location (address location) within the binary, also known as our current &lt;em&gt;seek&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Displaying information&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;As our binary has been already analyzed, the &lt;strong&gt;&lt;em&gt;-i command-&lt;/em&gt;&lt;/strong&gt; displays a bunch of information collected during r2 analysis.&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mh&quot;&gt;0x08049050&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;You can clear the screen with the command, well, &lt;strong&gt;&lt;em&gt;-clear-&lt;/em&gt;&lt;/strong&gt;:&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mh&quot;&gt;0x08049050&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;clear&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;&lt;strong&gt;List functions&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;One very useful command is the &lt;strong&gt;&lt;em&gt;-afl command-&lt;/em&gt;&lt;/strong&gt;. It’s used to list all functions that r2 found in the binary:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/afl-command.png&quot; alt=&quot;afl command&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;You can see the functions of our program referenced as &lt;em&gt;sym.sum&lt;/em&gt;, &lt;em&gt;sym.mul&lt;/em&gt; and &lt;em&gt;main&lt;/em&gt;. Those are the flags mentioned before, it’s a kind of tag created by r2 and used to reference useful properties found in the binary.&lt;/p&gt;
+
+&lt;p&gt;This information wouldn’t be available if we do not perform the analysis either by opening the file with the -A option or by running the &lt;em&gt;aaa&lt;/em&gt; command in radare2.&lt;/p&gt;
+
+&lt;p&gt;Another nice way to list all the functions with a bit more of information presented like a table is by using the &lt;strong&gt;&lt;em&gt;-afll command.-&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/afll-command.png&quot; alt=&quot;afll command&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Printing the disassembled binary&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;One of the main functionalities used in r2 is the disassembler. There are different ways to display the disassembled code in r2, the simpliest one is just using the &lt;strong&gt;&lt;em&gt;-pd command-&lt;/em&gt;&lt;/strong&gt;, which stands for &lt;em&gt;print disassembly&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/pd-command.png&quot; alt=&quot;pd command&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The &lt;em&gt;pd&lt;/em&gt; command prints the disassembled code of the &lt;strong&gt;current&lt;/strong&gt; location. You can see that it displays just a part of all the disassembly code, that is because of the block size.&lt;/p&gt;
+
+&lt;p&gt;The default value of the block size is 0x100 and can be set with the &lt;strong&gt;&lt;em&gt;-b command-&lt;/em&gt;&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mh&quot;&gt;0x08049050&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;new&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;You can print the disassembly code of all the content of a function regardless if it fits or not in the block size. To print a disassembled function you can use the command:&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mh&quot;&gt;0x08049050&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pdf&lt;/span&gt; &lt;span class=&quot;vi&quot;&gt;@function&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;flag&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;Where &lt;em&gt;function-flag&lt;/em&gt; is the flag that r2 assign to our function (the ones we saw when listing the functions previously). Notice that &lt;em&gt;pdf&lt;/em&gt; stands for &lt;em&gt;print disassembled function&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;That way, in order to print the disassembled code of &lt;em&gt;main&lt;/em&gt;, we run:&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mh&quot;&gt;0x08049050&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pdf&lt;/span&gt; &lt;span class=&quot;vi&quot;&gt;@main&lt;/span&gt; &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/pdf-main-command.png&quot; alt=&quot;pdf main&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The same way, we can print the content of &lt;em&gt;sym.mul&lt;/em&gt; and &lt;em&gt;sym.sum&lt;/em&gt;:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/pdf-fun-command.png&quot; alt=&quot;pdf fun&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;getting-help-the--command&quot;&gt;Getting help.! The ? command&lt;/h2&gt;
+
+&lt;p&gt;If I want you to remember something about this post is this: when in doubt, use the &lt;strong&gt;&lt;em&gt;-? command-&lt;/em&gt;&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mh&quot;&gt;0x08049050&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;?&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;It diplays help for r2 commands. But it goes further, you will see that there are commands composed of more than one character, such as pdf, and talking about pdf, we saw that pd does print disassembly and pdf does it as well but of a function. Those two commands belong to the print disassembly commands.&lt;/p&gt;
+
+&lt;p&gt;Like pd and pdf, there are other commands that kind of belong to a “category” of commands, like debugging commands, register commands, print mode commands and so on. And all of them look similar within their categories.&lt;/p&gt;
+
+&lt;p&gt;Let’s say you want more info about print disassembly commands, you can get such information by running:&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mh&quot;&gt;0x08049050&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pd?&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/pd-help-command.png&quot; alt=&quot;pd ?&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Following that logic, you can get help not only on a specific command, but about a “category” of commands.&lt;/p&gt;
+
+&lt;p&gt;There are a lot of other commands within the command mode. We are going to go through some of them but they happen to be more useful when they are used in visual mode so, we are going to see them &lt;strong&gt;in the second part&lt;/strong&gt; of this posts.&lt;/p&gt;
+
+&lt;p&gt;Anyway, with the information at this point, you should be able to play around with commands, getting help about them and experiment to see what they do.&lt;/p&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;References.&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://radare.gitbooks.io/radare2book/content/&quot;&gt;Radare2 Official Book&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/rizinorg/cutter&quot;&gt;Cutter GitHub Repository&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/rizinorg/rizin&quot;&gt;Rizin GitHub Repository&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</content><author><name>Rodo Gómez</name></author><summary type="html">This is the first post out of two that describes the usage of Radare2 to perform basic tasks that relate to binary analysis. That way, instead of explaining what a bunch of Radare commands do, this post goes through a basic workflow from opening a binary file, gather basic information about it, dissasemble it, explaining and working with the different modes that Radare2 offers and explore the disassembled binary.</summary></entry></feed>

@@ -1,4 +1,299 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2021-02-22T15:50:58-06:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">RodWaRE</title><subtitle>Blog</subtitle><author><name>Rodo Gómez</name></author><entry><title type="html">Radare2: Basic workflow and usage - Part 1</title><link href="http://localhost:4000/radare2-basic-workflow-and-usage" rel="alternate" type="text/html" title="Radare2: Basic workflow and usage - Part 1" /><published>2021-02-22T15:45:00-06:00</published><updated>2021-02-22T15:45:00-06:00</updated><id>http://localhost:4000/radare2-basic-wf-p1</id><content type="html" xml:base="http://localhost:4000/radare2-basic-workflow-and-usage">&lt;p&gt;This is the first post out of two that describes the usage of Radare2 to perform basic tasks that relate to binary analysis. That way, instead of explaining what a bunch of Radare commands do, this post goes through a basic workflow from opening a binary file, gather basic information about it, dissasemble it, explaining and working with the different modes that Radare2 offers and explore the disassembled binary.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2021-03-10T17:39:02-06:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">RodWaRE</title><subtitle>Blog</subtitle><author><name>Rodo Gómez</name></author><entry><title type="html">Radare2: Basic workflow and usage - Part 2</title><link href="http://localhost:4000/radare2-basic-workflow-and-usage-part2" rel="alternate" type="text/html" title="Radare2: Basic workflow and usage - Part 2" /><published>2021-03-08T15:45:00-06:00</published><updated>2021-03-08T15:45:00-06:00</updated><id>http://localhost:4000/radare2-basic-wf-p2</id><content type="html" xml:base="http://localhost:4000/radare2-basic-workflow-and-usage-part2">&lt;p&gt;This is the second post out of two that describes the usage of Radare2 to perform basic tasks that relate to binary analysis. In the &lt;a href=&quot;https://rodogomez.github.io/radare2-basic-workflow-and-usage&quot;&gt;previous post&lt;/a&gt; a brief introduction to r2 was given, as well as a basic workflow working on command mode within r2.&lt;/p&gt;
+
+&lt;p&gt;In this post, we’ll explore how to perform a basic analysis, operations and exploration of a binary working on &lt;strong&gt;Visual Mode&lt;/strong&gt; within r2.&lt;/p&gt;
+
+&lt;h2 id=&quot;lets-recap-r2-modes-of-operation&quot;&gt;Let’s recap: r2 modes of operation.&lt;/h2&gt;
+
+&lt;p&gt;As mentioned in the previous post, Radare2 has two modes of operation:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Command Mode.&lt;/li&gt;
+  &lt;li&gt;Visual Mode.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Command mode is the default mode, here, &lt;strong&gt;all r2 commands are available&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;Visual mode provides a set of different commands and this mode outputs the information in a graphical way, same that is actually an interactive interface.&lt;/p&gt;
+
+&lt;p&gt;One of the most important things you have to remember is that there are commands that perform the same action in both modes, but there are commands that, even when they look the same, perform a total different thing between modes.&lt;/p&gt;
+
+&lt;p&gt;Finally, remember that, when in doubt, you can always use the &lt;strong&gt;&lt;em&gt;-? command-&lt;/em&gt;&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;before-we-jump-into-it&quot;&gt;Before we jump into it:&lt;/h2&gt;
+
+&lt;p&gt;For this post, we’ll be using the same C program we used in the part 1:&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;n&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mul&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+ 
+&lt;span class=&quot;n&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(){&lt;/span&gt; 
+    &lt;span class=&quot;n&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mul&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;c&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+ 
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0xdefea7&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;&lt;strong&gt;NOTE:&lt;/strong&gt; In this series of posts we will be working with x86 binaries under the Linux OS so, the code above was compiled with the following command:&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;err&quot;&gt;$&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;gcc&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;m32&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;o&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;post&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sample&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;post&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sample&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;c&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;Where &lt;em&gt;-m32&lt;/em&gt; is the compilation flag used to specify that we want gcc to compile our code for x86 architecture.&lt;/p&gt;
+
+&lt;p&gt;So we have now an x86 binary ready to be analyzed with r2.&lt;/p&gt;
+
+&lt;h2 id=&quot;opening-our-binary&quot;&gt;Opening our binary.&lt;/h2&gt;
+
+&lt;p&gt;Let’s begin by opening our binary and run r2 analysis at once:&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;err&quot;&gt;$&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;A&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;post&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sample&lt;/span&gt; &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;Remember that the fuse -A makes r2 to run an analysis of the binary, creating flags and gathering useful information about the binary.&lt;/p&gt;
+
+&lt;p&gt;We should get the following result:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/ss1.png&quot; alt=&quot;r2 -A ./post-sample&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;working-in-visual-mode&quot;&gt;Working in Visual Mode.&lt;/h2&gt;
+
+&lt;p&gt;Visual mode provides, as its name suggests, a more graphical way of displaying information. In some way, visual mode provides a more user-friendly interface to work with when analyzing binaries.&lt;/p&gt;
+
+&lt;p&gt;Something important you have to remember is that in visual mode not all the r2 commands are available, and there are commands that do a different thing in visual mode compared with command mode.&lt;/p&gt;
+
+&lt;p&gt;This mode does not provide only one interface to the user, instead, visual modes consists of a set of &lt;strong&gt;&lt;em&gt;print modes&lt;/em&gt;&lt;/strong&gt;, also referred as &lt;strong&gt;&lt;em&gt;panels&lt;/em&gt;&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;Something that is a little bit confusing at the beginning, and that is important that you understand, is that such print modes share some commands (those commands do the same regardless the print mode), but there are other commands that does not do the same action and even, there are commands that are present in some print modes but aren’t in others.&lt;/p&gt;
+
+&lt;p&gt;You can think of it as if each print mode was actually a kind of &lt;em&gt;sub-mode&lt;/em&gt; within visual mode.&lt;/p&gt;
+
+&lt;p&gt;The different print modes available in visual mode are:&lt;/p&gt;
+
+&lt;p&gt;↻ Hexdump panel → Disassembly panel → Debugger panel → Hexadecimal words dump panel → Hex-less hexdump panel → Op analysis color map panel → Annotated hexdump panel ↻&lt;/p&gt;
+
+&lt;p&gt;The arrows represent the order of switching between print modes.&lt;/p&gt;
+
+&lt;p&gt;There is a special print mode, full of different functionalities and options, and it’s almost like if it was actually a third mode in r2, called &lt;strong&gt;&lt;em&gt;Panels view&lt;/em&gt;&lt;/strong&gt;, (which is the print mode that I personally use the most) but officially it is another print mode within visual mode, we’ll explore this special print mode last.&lt;/p&gt;
+
+&lt;p&gt;You can switch between print modes, but before explain that, let’s switch to Visual mode first.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Switching to visual mode&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;At this point, we are currently in command mode. In order to change to visual mode we can use the &lt;strong&gt;&lt;em&gt;-V command-&lt;/em&gt;&lt;/strong&gt; (note that is uppercase):&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mh&quot;&gt;0x08049050&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;V&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/img1-Visual-mode-hex-dump.png&quot; alt=&quot;Visual mode hex dump view&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Now we are in visual mode. The default print mode that you see once you enter in visual mode is an &lt;em&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Hex_dump&quot;&gt;hex dump&lt;/a&gt; view of the current seek&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;You can switch to other print modes using either the &lt;strong&gt;&lt;em&gt;-p command-&lt;/em&gt;&lt;/strong&gt; or &lt;strong&gt;&lt;em&gt;-P command-&lt;/em&gt;&lt;/strong&gt;:&lt;/p&gt;
+
+&lt;p&gt;Disassembly panel:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/img2-Visual-mode-disassembly-view.png&quot; alt=&quot;Visual mode disassembly view&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Color map panel&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/img3-color-map-panel.png&quot; alt=&quot;Color map panel&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;By now, let’s explore our workflow within the disassembly panel.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Exploring the binary&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;At this point, our current seek is the very beginning of our binary code, we can move around and explore the disassembled code using the &lt;em&gt;arrow keys or h, j, k, and l keys&lt;/em&gt;, same as the ones you use in the Vim text editor.&lt;/p&gt;
+
+&lt;p&gt;Moving using such keys allows you to navigate the disassembly code but only one line at a time.&lt;/p&gt;
+
+&lt;p&gt;You can go directly to specific locations, like a specific function or a specific part of the binary if you know its location within the binary, by using the flag of such function or binary location using the &lt;strong&gt;&lt;em&gt;_ command&lt;/em&gt;&lt;/strong&gt;. Let’s supose you want to go to the main function, just type _ and a list of r2 flags will be displayed:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/img5-using_command-main.png&quot; alt=&quot;Using _ command&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Then just type &lt;em&gt;main&lt;/em&gt; and press ENTER.&lt;/p&gt;
+
+&lt;p&gt;Now our current seek is the location of main:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/img6-using_command-main2.png&quot; alt=&quot;Using _ command main2&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;This way, the _ command is useful to search for specific functions/locations within our binary.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;The view management&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;View management is a functionality that &lt;strong&gt;is only available if you are NOT in Panels view&lt;/strong&gt; (but it’s available in all the other print modes).&lt;/p&gt;
+
+&lt;p&gt;The view management provides a set of options and functionalities that can be applied to the functions of our binary.&lt;/p&gt;
+
+&lt;p&gt;This functionality is accessed using the &lt;strong&gt;&lt;em&gt;-v command-&lt;/em&gt;&lt;/strong&gt;:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/img7-View-management.png&quot; alt=&quot;View management&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;As you can see, a list of all the functions of our binary is displayed and a preview of the disassembled code of the selected function is showed as well.&lt;/p&gt;
+
+&lt;p&gt;Using the &lt;em&gt;up&lt;/em&gt; and &lt;em&gt;down&lt;/em&gt; arrow keys, or &lt;em&gt;j&lt;/em&gt; and &lt;em&gt;k&lt;/em&gt; you can move between functions (see how an * symbol works as a cursor when moving around functions in the list).&lt;/p&gt;
+
+&lt;p&gt;Using the &lt;em&gt;right&lt;/em&gt; arrow key, or &lt;em&gt;l&lt;/em&gt; key, specific options (that applies to the current selected function) are displayed that relates to actions like add, rename, type and so on.&lt;/p&gt;
+
+&lt;p&gt;For a simple binary analysis, the options that I found useful the most are:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Rename a function.&lt;/li&gt;
+  &lt;li&gt;The &lt;em&gt;calls&lt;/em&gt; option.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;In order to ilustrate this functionalities, let’s rename our functions &lt;em&gt;sum&lt;/em&gt; and &lt;em&gt;mul&lt;/em&gt;. Remember that r2 found them when it ran the analysis and assigned them a flag. That way our functions are referenced by the flags &lt;em&gt;sym.sum&lt;/em&gt; and &lt;em&gt;sym.mul&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;If we want to rename &lt;em&gt;sym.sum&lt;/em&gt; function, we move the cursor selecting it, and press &lt;strong&gt;&lt;em&gt;r&lt;/em&gt;&lt;/strong&gt;, after that we’ll be asked to write the new name:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/img8-View-management-renaming-a-function.png&quot; alt=&quot;View management renaming a function&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Let’s rename it as &lt;em&gt;sum&lt;/em&gt; and then press ENTER.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/img9-Renaming-a-function-new-name.png&quot; alt=&quot;Renaming a function new name&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;And the same applies to &lt;em&gt;sym.mul&lt;/em&gt;:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/img10-Renaming-a-function-new-name2.png&quot; alt=&quot;Renaming a function new name2&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;In the other hand, the &lt;em&gt;calls&lt;/em&gt; option provides very useful information about the selected function, you can use this function just by typing &lt;strong&gt;&lt;em&gt;c&lt;/em&gt;&lt;/strong&gt;:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/img11-calls-functionality.png&quot; alt=&quot;calls functionality&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Some of the most useful information is:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Call-convention: Tells us the calling convection that the code is using, this is important when reversing a binary.&lt;/li&gt;
+  &lt;li&gt;locals: Tells us how many local variables are in the function (NOTE: the number of local variables may be different than the ones that were used in the source code, this is because the generated assembly code from the compiler may create more or less local variables depending on factors like optimizations at compile time.)&lt;/li&gt;
+  &lt;li&gt;args: Tells us how many arguments there are in the function signature.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Once you are done with the view management, you can exit from there by pressing &lt;strong&gt;&lt;em&gt;q&lt;/em&gt;&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;r2 commands within visual mode&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;As said before, when you are in visual mode, not all the r2 commands are available, at least not directly. But such limitation is not that real. There is a way to &lt;strong&gt;execute all the commands that are available in command mode being in visual mode&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;When in visual mode, &lt;strong&gt;in any of the print modes&lt;/strong&gt;, you can get an “r2 terminal” to execute command mode commands by pressing &lt;strong&gt;&lt;em&gt;:&lt;/em&gt;&lt;/strong&gt; (semicolon)&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/img12-r2-commands-from-visual-mode.png&quot; alt=&quot;r2 commands from visual mode&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;As you can see, a promt is displayed. Here you can type and execute any of the commands that are present in command mode.&lt;/p&gt;
+
+&lt;p&gt;This is really useful because, as long as you use Radare2, you’ll notice that you need to hex dump an specific location in memory, or print the contents of some location stored in a register and so on.&lt;/p&gt;
+
+&lt;p&gt;When you start running commands in this promt, you may notice that the interface suffer a scrolling-up and you lose your print mode, &lt;strong&gt;don’t worry.!&lt;/strong&gt;, once you are done with your r2 commands, just press ENTER (without any command on the promt) and the print mode is restored as it was before switching to the promt.&lt;/p&gt;
+
+&lt;p&gt;At this point, you should be able to navigate the disassembled code of any binary, rename functions, gather information, and explore more options in visual mode. But that’s not the end of this post, let’s now explore my favorite print mode, let’s explore &lt;strong&gt;Panels view&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;panels-view&quot;&gt;Panels view&lt;/h2&gt;
+
+&lt;p&gt;Panels view provides an interface with splitted windows, each window is called a panel, and each of those panels can show different print modes or different r2 command’s output at the same time.&lt;/p&gt;
+
+&lt;p&gt;That way, you can have a main panel that shows the disassembled code, another one to see the registers, another one to display the stack and so on.&lt;/p&gt;
+
+&lt;p&gt;There are basically 2 ways to switch to panels view, depending on your current r2 mode:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Switching from visual mode to panels view&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;To switch to panels view when you are currently in any print mode, within visual mode of course, just use the &lt;strong&gt;&lt;em&gt;-! command-&lt;/em&gt;&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/img13-panels-view-1.png&quot; alt=&quot;panels view 1&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Switching from command mode to panels view&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;To switch to panels view when you are currently in command mode, just use the &lt;strong&gt;&lt;em&gt;-v command-&lt;/em&gt;&lt;/strong&gt;(Note the lower case).&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/img13-panels-view-1.png&quot; alt=&quot;panels view 2&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;That way, if you are in command mode, using the &lt;strong&gt;&lt;em&gt;-v command-&lt;/em&gt;&lt;/strong&gt; you switch to &lt;strong&gt;panels view&lt;/strong&gt;, whereas using the &lt;strong&gt;&lt;em&gt;-V command-&lt;/em&gt;&lt;/strong&gt; change to &lt;strong&gt;visual mode&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Working in Panels view&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Panels view shares some functionalities with all the other print modes, but one that &lt;strong&gt;is not present is view management&lt;/strong&gt;, that way if you need something from view management you’ll need to switch to any other print mode.&lt;/p&gt;
+
+&lt;p&gt;If you need to execute r2 commands, you can do it the same way as in any other print mode, by using the &lt;strong&gt;&lt;em&gt;-: command-&lt;/em&gt;&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/img14-r2-commands-panel-view.png&quot; alt=&quot;r2 commands panel view&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;When I first ever launched this view, the default interface displays 3 different panels, the bigger one shows the disassembled code, and the other ones shows an hex dum of the stack and the registers.&lt;/p&gt;
+
+&lt;p&gt;Being honest, at this point I’m not sure if those are the default panels, but don’t worry, we’ll explore how to customize them.&lt;/p&gt;
+
+&lt;p&gt;You can move between panels using the &lt;strong&gt;TAB key&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;As you can see, there are some options at the top of the window, you can access such options using the &lt;strong&gt;&lt;em&gt;-m command&lt;/em&gt;&lt;/strong&gt;. You can explore the options available moving with the arrow keys or h, j, k and l.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/img15-m-command-windows.png&quot; alt=&quot;m command windows&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;If you want to search and go to an specific function in the disassembled code, you can do it the same way as in other print mode, using the &lt;strong&gt;&lt;em&gt;-_ command-&lt;/em&gt;&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Customizing the panels&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Let’s customize the two smaller panels. One way to achieve this is by moving to the desired panel and press the &lt;strong&gt;DEL key&lt;/strong&gt;:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/img16-customize-panel-1.png&quot; alt=&quot;customize panel 1&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;A menu is displayed with multiple predefined options, you can choose from them and just press ENTER to make the selection.&lt;/p&gt;
+
+&lt;p&gt;All this predefined views use an specific fixed r2 command, same that is visible at the top of each panel, but this is not the only way to customize the panels.&lt;/p&gt;
+
+&lt;p&gt;You can provide to any panel your &lt;strong&gt;own custom r2 command&lt;/strong&gt; by using the &lt;strong&gt;&lt;em&gt;-e command-&lt;/em&gt;&lt;/strong&gt;, just move to the desired panel and use the command:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/img17-customize-panel-2.png&quot; alt=&quot;customize panel 2&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;At the top of the window, a promt will be displayed asking you to write your r2 command, that way, whatever the output of that command is, it will be displayed in the selected panel.&lt;/p&gt;
+
+&lt;p&gt;I personally use those two panels to display the stack and the registers, respectively.&lt;/p&gt;
+
+&lt;p&gt;The command I use to display the stack is:&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;n&quot;&gt;pxW&lt;/span&gt; &lt;span class=&quot;vi&quot;&gt;@esp&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;&lt;em&gt;px&lt;/em&gt; belog to the &lt;em&gt;print hexadecimal&lt;/em&gt; commands. &lt;em&gt;W&lt;/em&gt; specifies the size of the hex dump and stands for &lt;em&gt;word&lt;/em&gt; size. Notice that in radare2 a word is 32 bits. And &lt;em&gt;W&lt;/em&gt; is uppercase, which specifies that the output will be displayed one word per line.&lt;/p&gt;
+
+&lt;p&gt;And for the registers I just use the predefined one, using the DEL key.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/img18-custom-panels.png&quot; alt=&quot;custom panels&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;bonus-graph-view&quot;&gt;Bonus: Graph view&lt;/h2&gt;
+
+&lt;p&gt;Graph view displays the disassembled code showing the branches (if any) and a call graph view as well.&lt;/p&gt;
+
+&lt;p&gt;When in visual mode, &lt;strong&gt;in any print mode&lt;/strong&gt;, you can go to graph view using the &lt;strong&gt;SPACE key&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/img19-Graph-view.png&quot; alt=&quot;Graph view&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/img20-Graph-view2.png&quot; alt=&quot;Graph view2&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The displayed disassembled code depends on the current seek, if you are located at main in the binary, then the disassembled code will be from main.&lt;/p&gt;
+
+&lt;p&gt;You can move around the graph view using the arrow keys and h, j, k and l keys.&lt;/p&gt;
+
+&lt;p&gt;This view helps you see in a more ilustrative interface the branches created by &lt;em&gt;if&lt;/em&gt; statements, &lt;em&gt;switch cases&lt;/em&gt; and other conditional and non-conditional jumps in code.&lt;/p&gt;
+
+&lt;h2 id=&quot;getting-help&quot;&gt;Getting help&lt;/h2&gt;
+
+&lt;p&gt;Regardless the current mode you are in, you can use the &lt;strong&gt;&lt;em&gt;-? command&lt;/em&gt;&lt;/strong&gt; to get help.&lt;/p&gt;
+
+&lt;h2 id=&quot;conclusions&quot;&gt;Conclusions&lt;/h2&gt;
+
+&lt;p&gt;Now you should be able to perform a basic binary analysis using both command mode and visual mode. From here, you can dedice which mode, or which print mode, is better for you.&lt;/p&gt;
+
+&lt;p&gt;Notice that knowing how to use tools for binary analysis, such as Radare2, is just useful if you have previous knowledge about concepts like assembly, computer architecture and even programming. In future posts, I’ll be exploring some stuff about those concepts that migth be helpful for everyone interested in this areas.&lt;/p&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;References.&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://radare.gitbooks.io/radare2book/content/&quot;&gt;Radare2 Official Book&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</content><author><name>Rodo Gómez</name></author><summary type="html">This is the second post out of two that describes the usage of Radare2 to perform basic tasks that relate to binary analysis. In the previous post a brief introduction to r2 was given, as well as a basic workflow working on command mode within r2.</summary></entry><entry><title type="html">Radare2: Basic workflow and usage - Part 1</title><link href="http://localhost:4000/radare2-basic-workflow-and-usage" rel="alternate" type="text/html" title="Radare2: Basic workflow and usage - Part 1" /><published>2021-02-22T15:45:00-06:00</published><updated>2021-02-22T15:45:00-06:00</updated><id>http://localhost:4000/radare2-basic-wf-p1</id><content type="html" xml:base="http://localhost:4000/radare2-basic-workflow-and-usage">&lt;p&gt;This is the first post out of two that describes the usage of Radare2 to perform basic tasks that relate to binary analysis. That way, instead of explaining what a bunch of Radare commands do, this post goes through a basic workflow from opening a binary file, gather basic information about it, dissasemble it, explaining and working with the different modes that Radare2 offers and explore the disassembled binary.&lt;/p&gt;
 
 &lt;p&gt;&lt;strong&gt;NOTE:&lt;/strong&gt; Debugging a binary file deserves its own post so it will be covered in a future post.&lt;/p&gt;
 

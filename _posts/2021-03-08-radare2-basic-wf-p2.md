@@ -82,7 +82,7 @@ Visual mode provides, as its name suggests, a more graphical way of displaying i
 
 Something important you have to remember is that in visual mode not all the r2 commands are available, and there are commands that do a different thing in visual mode compared with command mode.
 
-This mode does not provide only one interface to the user, instead, visual modes consists of a set of ***print modes***, also referred as ***panels***.
+This mode does not provide only one interface to the user, instead, visual mode consists of a set of ***print modes***, also referred as ***panels***.
 
 Something that is a little bit confusing at the beginning, and that is important that you understand, is that such print modes share some commands (those commands do the same regardless the print mode), but there are other commands that does not do the same action and even, there are commands that are present in some print modes but aren't in others.
 
@@ -96,7 +96,7 @@ The arrows represent the order of switching between print modes.
 
 There is a special print mode, full of different functionalities and options, and it's almost like if it was actually a third mode in r2, called ***Panels view***, (which is the print mode that I personally use the most) but officially it is another print mode within visual mode, we'll explore this special print mode last.
 
-You can switch between print modes, but before explain that, let's switch to Visual mode first.
+You can switch between print modes, but before explaining that, let's switch to Visual mode first.
 
 **Switching to visual mode**
 
@@ -126,7 +126,7 @@ By now, let's explore our workflow within the disassembly panel.
 
 At this point, our current seek is the very beginning of our binary code, we can move around and explore the disassembled code using the *arrow keys or h, j, k, and l keys*, same as the ones you use in the Vim text editor.
 
-Moving using such keys allows you to navigate the disassembly code but only one line at a time. 
+Moving using such keys allows you to navigate the disassembled code but only one line at a time. 
 
 You can go directly to specific locations, like a specific function or a specific part of the binary if you know its location within the binary, by using the flag of such function or binary location using the ***_ command***. Let's supose you want to go to the main function, just type _ and a list of r2 flags will be displayed:
 
@@ -152,7 +152,7 @@ This functionality is accessed using the ***-v command-***:
 
 As you can see, a list of all the functions of our binary is displayed and a preview of the disassembled code of the selected function is showed as well.
 
-Using the *up* and *down* arrow keys, or *j* and *k* you can move between functions (see how an * symbol works as a cursor when moving around functions in the list).
+Using the *up* and *down* arrow keys, or *j* and *k* you can move between functions (see how an * symbol works as a cursor when moving around between functions in the list).
  
 Using the *right* arrow key, or *l* key, specific options (that applies to the current selected function) are displayed that relates to actions like add, rename, type and so on.
 
@@ -233,13 +233,13 @@ If you need to execute r2 commands, you can do it the same way as in any other p
 
 ![r2 commands panel view](/assets/radare2-basic-wf/img14-r2-commands-panel-view.png)
 
-When I first ever launched this view, the default interface displays 3 different panels, the bigger one shows the disassembled code, and the other ones shows an hex dum of the stack and the registers.
+When I first ever launched this view, the default interface displayed 3 different panels, the bigger one showed the disassembled code, and the other ones showed an hex dum of the stack and the registers.
 
 Being honest, at this point I'm not sure if those are the default panels, but don't worry, we'll explore how to customize them.
 
 You can move between panels using the **TAB key**.
 
-As you can see, there are some options at the top of the window, you can access such options using the ***-m command***. You can explore the options available moving with the arrow keys or h, j, k and l.
+As you can see, there are some options at the top of the window, you can access such options using the ***-m command-***. You can explore the options available moving with the ***arrow keys*** or ***h, j, k and l***.
 
 ![m command windows](/assets/radare2-basic-wf/img15-m-command-windows.png)
 
@@ -269,7 +269,7 @@ The command I use to display the stack is:
 pxW @esp
 {% endhighlight %}
 
-*px* belog to the *print hexadecimal* commands. *W* specifies the size of the hex dump and stands for *word* size. Notice that in radare2 a word is 32 bits. And *W* is uppercase, which specifies that the output will be displayed one word per line.
+*px* belongs to the *print hexadecimal* commands. *W* specifies the size of the hex dump and stands for *word* size. Notice that in radare2 a word is 32 bits. And *W* is uppercase, which specifies that the output will be displayed one word per line.
 
 And for the registers I just use the predefined one, using the DEL key.
 
@@ -287,9 +287,9 @@ When in visual mode, **in any print mode**, you can go to graph view using the *
 
 The displayed disassembled code depends on the current seek, if you are located at main in the binary, then the disassembled code will be from main.
 
-You can move around the graph view using the arrow keys and h, j, k and l keys.
+You can move around the graph view using the ***arrow keys*** and ***h, j, k and l keys***.
 
-This view helps you see in a more ilustrative interface the branches created by *if* statements, *switch cases* and other conditional and non-conditional jumps in code.
+This view helps you see in a more ilustrative interface the branches created by *if* statements, *switch cases* and other *conditional* and *non-conditional* jumps in code.
 
 
 ## Getting help

@@ -1,4 +1,199 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2021-03-10T17:39:02-06:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">RodWaRE</title><subtitle>Blog</subtitle><author><name>Rodo Gómez</name></author><entry><title type="html">Radare2: Basic workflow and usage - Part 2</title><link href="http://localhost:4000/radare2-basic-workflow-and-usage-part2" rel="alternate" type="text/html" title="Radare2: Basic workflow and usage - Part 2" /><published>2021-03-08T15:45:00-06:00</published><updated>2021-03-08T15:45:00-06:00</updated><id>http://localhost:4000/radare2-basic-wf-p2</id><content type="html" xml:base="http://localhost:4000/radare2-basic-workflow-and-usage-part2">&lt;p&gt;This is the second post out of two that describes the usage of Radare2 to perform basic tasks that relate to binary analysis. In the &lt;a href=&quot;https://rodogomez.github.io/radare2-basic-workflow-and-usage&quot;&gt;previous post&lt;/a&gt; a brief introduction to r2 was given, as well as a basic workflow working on command mode within r2.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2021-04-12T14:24:35-05:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">RodWaRE</title><subtitle>Blog</subtitle><author><name>Rodo Gómez</name></author><entry><title type="html">x86 Architecture: Architecture 101</title><link href="http://localhost:4000/x86arch-part1-intro-101" rel="alternate" type="text/html" title="x86 Architecture: Architecture 101" /><published>2021-04-02T15:45:00-06:00</published><updated>2021-04-02T15:45:00-06:00</updated><id>http://localhost:4000/x86arch-part1-arch-101</id><content type="html" xml:base="http://localhost:4000/x86arch-part1-intro-101">&lt;p&gt;Welcome to this new series of posts, this time we’ll be talking about &lt;strong&gt;x86-64 computer architecture&lt;/strong&gt;, specifically, on the firsts posts, I’ll give a very very basic introduction to computer architecture, how it works, CPU, memory and more, then in future posts we’ll discuss the hardware support that Intel 64 and IA-32 architectures give to Operating Systems to achieve:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Memory Management.&lt;/li&gt;
+  &lt;li&gt;Memory Addressing.&lt;/li&gt;
+  &lt;li&gt;Memory Protection.&lt;/li&gt;
+  &lt;li&gt;Separation and protection between Kernel-space and User-space.&lt;/li&gt;
+  &lt;li&gt;Interrupts.&lt;/li&gt;
+  &lt;li&gt;Hardware I/O.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Besides talking about hardware specific support, we’ll explore &lt;strong&gt;how the Linux Kernel uses those hardware features&lt;/strong&gt; from x86 processors through kernel debugging, analyzing kernel source code and implementing kernel modules that extract information to be analized.&lt;/p&gt;
+
+&lt;p&gt;By the moment of writing this post, I’m not sure about how many parts will compose this series, so this post will be the first out of &lt;em&gt;n&lt;/em&gt; posts within this new series.&lt;/p&gt;
+
+&lt;p&gt;This first post will be about an introduction to computer architecture, we’ll discuss the components that a computer system has and how they interact between each other (just a general, but complete, description). 
+Notice that the content in this post will be just an introduction to all those concepts, even when I would try to give you a complete and general overview of the architecture of a computer system and how it works, I’m not pretending to touch every tiny detail about the subject.&lt;/p&gt;
+
+&lt;p&gt;Any way, if you want to go deeper on the concepts discussed in this post, I’ll leave some useful references and links in the &lt;strong&gt;References&lt;/strong&gt; section.&lt;/p&gt;
+
+&lt;p&gt;So, without further ado, let’s get started.!&lt;/p&gt;
+
+&lt;h2 id=&quot;computer-architecture-101&quot;&gt;Computer Architecture 101.&lt;/h2&gt;
+
+&lt;p&gt;A &lt;strong&gt;computer system&lt;/strong&gt; consists of different components and subsystems that work together creating a system able to compute instructions that solve specific tasks. In order to build this kind of system, there are different ways in which you can design it, define its components, its organization and ultimately how everything works within such system. That computer’s design is called the &lt;strong&gt;&lt;em&gt;Computer Architecture&lt;/em&gt;&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;One of the most well known and implemented computer architecture in today’s computer systems is the &lt;a href=&quot;https://en.wikipedia.org/wiki/Von_Neumann_architecture&quot;&gt;&lt;strong&gt;&lt;em&gt;Von Neumann Architecture.&lt;/em&gt;&lt;/strong&gt;&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;There are other computer architectures that are well known and actually implemented by different processors and real applications, such as the &lt;a href=&quot;https://en.wikipedia.org/wiki/Harvard_architecture&quot;&gt;Hardvard Architecture&lt;/a&gt;. Von Neumann Architecture and Hardvard Architecture have many things in common, but they differ in how some componets interact between each other, how they store and retrieve information depending on the type of information (machine instructions against data) and so on. Any way, since Intel processors implement Von Neumann Architecture, the concepts and theory about computer architecture discussed in this series will relate to Von Neumann Architecture.&lt;/p&gt;
+
+&lt;h2 id=&quot;system-organization&quot;&gt;System Organization.&lt;/h2&gt;
+
+&lt;p&gt;Simplifying things, computer systems based on Von Neumann Architecture consist mainly in 3 well defined components:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;CPU.&lt;/li&gt;
+  &lt;li&gt;Memory (RAM).&lt;/li&gt;
+  &lt;li&gt;I/O Devices.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;And then, the CPU have another set of components within it:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Control Unit (CU).&lt;/li&gt;
+  &lt;li&gt;Aritmetic Logic Unit (ALU).&lt;/li&gt;
+  &lt;li&gt;Registers.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;assets/computer-arch-series/von-neumman-arch.png&quot; alt=&quot;Von Neumann Arch&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;There are some processors that implement other hardware features such as caches, or even more than one processor within a single chip.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Basic system functionality.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;One of the most important features that Von Neumann brought with this architecture is that &lt;strong&gt;CPU instructions and data from processes are stored in memory&lt;/strong&gt; when they are loaded to be executed, then, when a process is executing, &lt;strong&gt;the CPU retreives CPU instructions and data&lt;/strong&gt; as needed. This was not the case in the early’s days of computing, when only data could be stored in memory and hardware circuitry had to be modified for each program to be properly executed. Because of this, Von Neumann Architecture systems are also referred as &lt;strong&gt;stored-program computers.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;All computations occur inside the CPU, as mentioned before, it retrieves information (CPU instructions and/or data) from memory and stores information in memory as needed as well. The CPU instructions are retreived and executed one by one, data is stored or retreived as needed, and when the execution of the current instruction is finished, then the CPU fetches the next one and repeats the cycle (this is the normal workflow of execution if we don’t consider &lt;strong&gt;interrupts&lt;/strong&gt;, I’ll cover software and hardware interrupts in a future post).&lt;/p&gt;
+
+&lt;p&gt;It might be the case that the current executing process requires access to a hardware device that is connected to the CPU, in that case, the CPU communicates with I/O devices either sending or fetching information to/from them.&lt;/p&gt;
+
+&lt;p&gt;In this type of computer architecture, to the CPU, &lt;strong&gt;dealing with most I/O devices is practically the same as dealing with memory&lt;/strong&gt;. To the CPU, I/O devices and memory are just external components to which it can interact with by sending or fetching data to/from them. Any way, there are differences in the way CPUs exchange information between memory and I/O devices, and of course, we’ll talk about it :D.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;assets/computer-arch-series/system-bus-book.png&quot; alt=&quot;System bus book&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Image from Art of Intel x86 Assembly book (see References section)&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;All this components, I/O devices, memory and the CPU, need a way to exchange information between them and the way in which that comunication is implemented is called &lt;strong&gt;the System Bus&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;the-system-bus&quot;&gt;The System Bus.&lt;/h2&gt;
+
+&lt;p&gt;In simple terms, &lt;strong&gt;the System Bus is just a set of electrical conexions that exists in the physical circuit&lt;/strong&gt; (mother board of the computer) and this bus interconnects all the components in the computer system. The System Bus is literally a &lt;strong&gt;set of wires that transport electrical signals&lt;/strong&gt; between computer components.&lt;/p&gt;
+
+&lt;p&gt;The specific implementation of the System Bus depends totally on the characteristics of the processor that’s being used but the function of the bus is always the same, to transport electrical signals between components allowing communication between them.&lt;/p&gt;
+
+&lt;p&gt;A typical x86 processor uses &lt;em&gt;standard TTL logic levels&lt;/em&gt; as voltage for the transmitted signals. A standard TTL logic level &lt;em&gt;zero&lt;/em&gt; is represented by a voltage in the range 0.0 - 0.8v, whereas a logic &lt;em&gt;one&lt;/em&gt; is represented by a voltage level in the range 2.4 - 5v.&lt;/p&gt;
+
+&lt;p&gt;The System Bus can be divided in 3 different busses:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Data Bus.&lt;/li&gt;
+  &lt;li&gt;Address Bus.&lt;/li&gt;
+  &lt;li&gt;Control Bus.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;assets/computer-arch-series/system-bus.png&quot; alt=&quot;System bus&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;These busses have their own porpuse, but remember, all of them have the same essential function, transport electrical signals between components, the meaning of this signals and what information do the busses carry is what defines the specific function of each bus in the system.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;The Data Bus.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;As it’s name suggests, &lt;strong&gt;the Data Bus is used to shuffle data between the computer system components&lt;/strong&gt;. Historically, the size (I mean, how many wires the bus has) has changed between different processors, having size values of:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;8 bits.&lt;/li&gt;
+  &lt;li&gt;16 bits.&lt;/li&gt;
+  &lt;li&gt;32 bits.&lt;/li&gt;
+  &lt;li&gt;64 bits.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;As you might expect, the newer the processor the bigger the data bus size.&lt;/p&gt;
+
+&lt;p&gt;Even though all busses have different sizes between processors (data bus, control bus and address bus), &lt;strong&gt;the Data Bus size has more impact on the performance of the system than the other ones.&lt;/strong&gt; Practically, a system with a 16 bit data bus is twice as fast as a system with an 8 bit data bus. And sure, having a 32 bit data bus means that the circuit has 32 physical wires, each wire is equivalent to a bit.&lt;/p&gt;
+
+&lt;p&gt;That way, the CPU is capable of moving data to/from memory in chunks of the same size of the data bus &lt;strong&gt;per memory cycle&lt;/strong&gt; (by memory cycle, I mean the entire event of storing or fetching data and it’s totally different than CPU cycles, so don’t confuse them). In a system with an 8 bit data bus, it takes one memory cycle to fetch 8 bits of data, twice for 16 bits and so on.&lt;/p&gt;
+
+&lt;p&gt;It’s important to notice that the size of the data bus &lt;strong&gt;does not limit the size of data types that a process (program) can use&lt;/strong&gt;. You can have 32 bit data types in a program that is running on a system with a data bus of 16 bits, this only means that it will take two memory cycles to fetch the entire 32 bit data.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Have you heard someone saying “I have a 32-bit system” or “my laptop is a 64-bit computer”?&lt;/strong&gt; Well, it turns out that &lt;strong&gt;the size of the Data Bus determines what’s called the size of the processor.&lt;/strong&gt; That way, a system with an 8 bit data bus is called an 8 bit processor, same way, a 32 bit processor has a 32 bit data bus.&lt;/p&gt;
+
+&lt;p&gt;Notice that the data bus is not only used to move data between the CPU and memory, &lt;strong&gt;it is used as well for moving data between I/O devices and the CPU&lt;/strong&gt;. In fact, some I/O devices can appear another section in the accesible memory (remember that to the CPU, most I/O devices are kind of the same as memory).&lt;/p&gt;
+
+&lt;p&gt;The CPU needs a way to specify from where in memory or from where in an I/O device it wants to fecth data (or store data). The solution to this is provided by the address bus.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;The Address Bus.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;The CPU uses the address bus to specify the &lt;strong&gt;location, AKA address, from where it wants to retrieve data&lt;/strong&gt; (and again, to where store it) either from memory or from an I/O device. So every time the CPU wants to access information in memory or in I/O devices, it just places the corresponding address in the Address Bus.&lt;/p&gt;
+
+&lt;p&gt;Memory and I/O devices have internal circuitry as well, when the CPU requests information from a specific address, the circuitry from memory and I/O devices recognizes that they contain the address requested by the processor, if they have such address of course, and acts in response (storing or sending data). If they don’t recongnize the address, they just ignore it.&lt;/p&gt;
+
+&lt;p&gt;The amount of wires that the Address Bus has &lt;strong&gt;determines the amount of physical addressable memory.&lt;/strong&gt; That way, if you have an address bus with just one wire, you’d be able to address only two unique addresses, 0 and 1.&lt;/p&gt;
+
+&lt;p&gt;Firsts x86 processors had an address bus of 20 bits (wires) which allows them to address up to 1,048,576 different locations, which is the same as 1 MegaByte of addressable memory.&lt;/p&gt;
+
+&lt;p&gt;Modern processors have a 32 bits address bus, which allows them to address up to 4,294,976,296, or 4GB of addressable memory. There exist hardware mechanisms that allow an expansion of addressable memory increasing the address bus from a 32 bit address bus to a 36 bit address bus, allowing the processor to address up to 64GB of memory, but we’ll discuss it in a future post :D.&lt;/p&gt;
+
+&lt;p&gt;Notice that &lt;strong&gt;memory and I/O devices share the same address bus!&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Something important is, &lt;strong&gt;the maximum amount of addressable memory is always the same as the address bus size, but the address bus size for I/O devices is always 16 bits long&lt;/strong&gt;, what happens is that when accessing memory, all the address bus is used to specify the location in memory, but when accessing I/O devices, only the 16 &lt;em&gt;least significat bits&lt;/em&gt; of the address bus are used. In consequence the processor is able to address up to 65,536 different I/O locations.&lt;/p&gt;
+
+&lt;p&gt;If the CPU sees memory and I/O as the same thing, how does the CPU specify that the resquested address belongs to a memory location and not to a I/O device and vice versa? How does the CPU communicates that it wants to store some data at a specific address instead of fetching data from that same address?
+To solve this issues, the control bus comes into the picture!&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;The Control Bus.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;This is probably the bus that has more differences between different processors, in simple terms, the control bus is used by the CPU to send specific signals to the rest of the components that determines how it wants to communicates. For example, &lt;strong&gt;there are 2 dedicated wires in the control bus used to specify if the CPU wants to &lt;em&gt;read&lt;/em&gt; data from memory or it it wants to &lt;em&gt;write&lt;/em&gt; data to memory.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;As I said, there are different designs of the control bus, but regardless those differences, there are some signals that are common between processors.&lt;/p&gt;
+
+&lt;p&gt;There are signals in the control bus that are used to specify when the CPU wants to &lt;em&gt;read&lt;/em&gt; or &lt;em&gt;write&lt;/em&gt; data, as well as signals used to specify if the CPU wants to access memory or an I/O device.&lt;/p&gt;
+
+&lt;p&gt;So when the CPU wants to read something from memory, it places the desired address in the address bus, and it places the respective values in the control bus specifying it wants to read instead of writing, and that it want such information from memory and not an I/O device, finally the circuitry from memory recognizes that the CPU is asking for some information from it at an specific location, if such address exists, memory places the data in the data bus and the CPU just reads it, and that’s how (in a general description) communication between CPU and memory occurs.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;assets/computer-arch-series/read-memory.png&quot; alt=&quot;System bus&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;And in the other hand, the control bus places the respective signal on the control bus specifying it wants to write some data in memory.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;assets/computer-arch-series/write-memory.png&quot; alt=&quot;System bus&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Images form Art of Intel x86 Assembly book&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;When the CPU wants information from an I/O device, the process is mostly the same, with the only difference that the CPU places in the control bus a signal specifying that it wants such information from I/O instead of memory. In this scenario, circuitry in the I/O device recognize that the CPU requested information from it, and if it contains the requested address, it responds placing the information located at such address in the data bus. And remember, the address bus for I/O devices is always 16 bits, so the CPU places the requested address in the address bus, but using the &lt;em&gt;least significant bits&lt;/em&gt; in the address bus and the remaining bits are just ignored.&lt;/p&gt;
+
+&lt;p&gt;NOTE: By the moment of writing this post I haven’t found that much information about the exact configuration of the control bus signals on different processors, because of that I’m not able to specify the name of the signals, the values and interpretation they have on real processors D:, any way as soon as I get more information I’ll update this post :D.&lt;/p&gt;
+
+&lt;h2 id=&quot;lets-talk-about-memory&quot;&gt;Let’s talk about memory.&lt;/h2&gt;
+
+&lt;p&gt;Just before the end of this post, let’s talk about memory.
+x86 processors supports &lt;strong&gt;byte addressable memory&lt;/strong&gt;, which this means is that the smallest and more basic unit of memory that x86 processors are able to access is a single byte (a byte is equal to 8 bits).&lt;/p&gt;
+
+&lt;p&gt;You can imagine memory as an array of cells, &lt;strong&gt;each cell can store 1 byte&lt;/strong&gt;, or in other words, each cell is composed of 8 bits, and the exact location of each cell within the array is what is known as the &lt;strong&gt;memory address&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;assets/computer-arch-series/memory-ram.png&quot; alt=&quot;Memory Ram&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Memory addresses will be always given in hexadecimal numbers, so it’s really important that you understand numerical systems and conversions.&lt;/p&gt;
+
+&lt;p&gt;When dealing with memory values and addresses, you will notice that some places uses the terms &lt;em&gt;word, byte, double word&lt;/em&gt; and so on, so let’s explain it.&lt;/p&gt;
+
+&lt;p&gt;The most basic unit of memory (I’m talking about unit of memory itself, not unit of addressable memory by the CPU) is a &lt;strong&gt;bit&lt;/strong&gt;, with it you can represent 2 values, 0 or 1, and those two values could mean whatever you want them to mean, black and white, on or off, up or down, or even 7541 and 500.&lt;/p&gt;
+
+&lt;p&gt;Then, there are the &lt;strong&gt;nibbles&lt;/strong&gt;, a nibble is a collection of &lt;strong&gt;4 bits&lt;/strong&gt; and the bit that is at the most right side is called the &lt;em&gt;least significant bit (LSB)&lt;/em&gt; in contrast with the most left side bit, which is called &lt;em&gt;the most significant bit (MSB)&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;Then we have a &lt;strong&gt;byte&lt;/strong&gt;, a byte is composed of &lt;strong&gt;8 bits, or 2 nibbles&lt;/strong&gt;, the nibble that is at the right is called the &lt;em&gt;Low Order nibble&lt;/em&gt; and the other one is called the &lt;em&gt;High Order nibble&lt;/em&gt;, this because the LO nibble contains the LSB and the HO nibble contains the MSB.&lt;/p&gt;
+
+&lt;p&gt;Then we have a &lt;strong&gt;word&lt;/strong&gt;, a word consists of &lt;strong&gt;16 bits, or 2 bytes, or 4 nibbles.&lt;/strong&gt; It also has its LO nibble and HO nibble plus its HO byte and its LO byte.&lt;/p&gt;
+
+&lt;p&gt;Then there is the &lt;strong&gt;double word&lt;/strong&gt;, a double word contains &lt;strong&gt;32 bits, or 4 bytes, or 8 nibbles&lt;/strong&gt;, and it has its LO and HO nibbles, bytes and words.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;assets/computer-arch-series/memory-units.jpg&quot; alt=&quot;Memory Ram&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;This terms apply when you are talking about memory values, sizes of data types and other cases, for instance, when reading assembly, you might see an instrucction saying something like:&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;no&quot;&gt;MOV&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;eax&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;DWORD&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;PTR&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ebx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;That &lt;em&gt;dword&lt;/em&gt; is telling that this assembly instrucction requires to access a value in memory that is a double word value, or a 4 bytes value.&lt;/p&gt;
+
+&lt;p&gt;Well, this is already a huge post, it might be kind of boring to learn this things, I tried to be as brief as possible but complete and concrete at the same time.&lt;/p&gt;
+
+&lt;p&gt;In the next post, (I’ll try to bring it soon xD), I’ll dive deep on the CPU, we’ll talk about the internals of the CPU, how they work, instruction set, registers and more, so I hope you find this post useful and informative and I encourage you to dive deeper in the subject if you are interested in.&lt;/p&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;References.&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Von_Neumann_architecture&quot;&gt;Von Neumann Architecture.&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Harvard_architecture&quot;&gt;Hardvard Architecture.&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/System_bus&quot;&gt;System Bus.&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://archive.org/details/ArtOfIntelX86Assembly/page/n67/mode/2up&quot;&gt;The Art Of Intel x86 Assembly.&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</content><author><name>Rodo Gómez</name></author><summary type="html">Welcome to this new series of posts, this time we’ll be talking about x86-64 computer architecture, specifically, on the firsts posts, I’ll give a very very basic introduction to computer architecture, how it works, CPU, memory and more, then in future posts we’ll discuss the hardware support that Intel 64 and IA-32 architectures give to Operating Systems to achieve: Memory Management. Memory Addressing. Memory Protection. Separation and protection between Kernel-space and User-space. Interrupts. Hardware I/O.</summary></entry><entry><title type="html">Radare2: Basic workflow and usage - Part 2</title><link href="http://localhost:4000/radare2-basic-workflow-and-usage-part2" rel="alternate" type="text/html" title="Radare2: Basic workflow and usage - Part 2" /><published>2021-03-08T15:45:00-06:00</published><updated>2021-03-08T15:45:00-06:00</updated><id>http://localhost:4000/radare2-basic-wf-p2</id><content type="html" xml:base="http://localhost:4000/radare2-basic-workflow-and-usage-part2">&lt;p&gt;This is the second post out of two that describes the usage of Radare2 to perform basic tasks that relate to binary analysis. In the &lt;a href=&quot;https://rodogomez.github.io/radare2-basic-workflow-and-usage&quot;&gt;previous post&lt;/a&gt; a brief introduction to r2 was given, as well as a basic workflow working on command mode within r2.&lt;/p&gt;
 
 &lt;p&gt;In this post, we’ll explore how to perform a basic analysis, operations and exploration of a binary working on &lt;strong&gt;Visual Mode&lt;/strong&gt; within r2.&lt;/p&gt;
 
@@ -70,7 +265,7 @@
 
 &lt;p&gt;Something important you have to remember is that in visual mode not all the r2 commands are available, and there are commands that do a different thing in visual mode compared with command mode.&lt;/p&gt;
 
-&lt;p&gt;This mode does not provide only one interface to the user, instead, visual modes consists of a set of &lt;strong&gt;&lt;em&gt;print modes&lt;/em&gt;&lt;/strong&gt;, also referred as &lt;strong&gt;&lt;em&gt;panels&lt;/em&gt;&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;This mode does not provide only one interface to the user, instead, visual mode consists of a set of &lt;strong&gt;&lt;em&gt;print modes&lt;/em&gt;&lt;/strong&gt;, also referred as &lt;strong&gt;&lt;em&gt;panels&lt;/em&gt;&lt;/strong&gt;.&lt;/p&gt;
 
 &lt;p&gt;Something that is a little bit confusing at the beginning, and that is important that you understand, is that such print modes share some commands (those commands do the same regardless the print mode), but there are other commands that does not do the same action and even, there are commands that are present in some print modes but aren’t in others.&lt;/p&gt;
 
@@ -84,7 +279,7 @@
 
 &lt;p&gt;There is a special print mode, full of different functionalities and options, and it’s almost like if it was actually a third mode in r2, called &lt;strong&gt;&lt;em&gt;Panels view&lt;/em&gt;&lt;/strong&gt;, (which is the print mode that I personally use the most) but officially it is another print mode within visual mode, we’ll explore this special print mode last.&lt;/p&gt;
 
-&lt;p&gt;You can switch between print modes, but before explain that, let’s switch to Visual mode first.&lt;/p&gt;
+&lt;p&gt;You can switch between print modes, but before explaining that, let’s switch to Visual mode first.&lt;/p&gt;
 
 &lt;p&gt;&lt;strong&gt;Switching to visual mode&lt;/strong&gt;&lt;/p&gt;
 
@@ -112,7 +307,7 @@
 
 &lt;p&gt;At this point, our current seek is the very beginning of our binary code, we can move around and explore the disassembled code using the &lt;em&gt;arrow keys or h, j, k, and l keys&lt;/em&gt;, same as the ones you use in the Vim text editor.&lt;/p&gt;
 
-&lt;p&gt;Moving using such keys allows you to navigate the disassembly code but only one line at a time.&lt;/p&gt;
+&lt;p&gt;Moving using such keys allows you to navigate the disassembled code but only one line at a time.&lt;/p&gt;
 
 &lt;p&gt;You can go directly to specific locations, like a specific function or a specific part of the binary if you know its location within the binary, by using the flag of such function or binary location using the &lt;strong&gt;&lt;em&gt;_ command&lt;/em&gt;&lt;/strong&gt;. Let’s supose you want to go to the main function, just type _ and a list of r2 flags will be displayed:&lt;/p&gt;
 
@@ -138,7 +333,7 @@
 
 &lt;p&gt;As you can see, a list of all the functions of our binary is displayed and a preview of the disassembled code of the selected function is showed as well.&lt;/p&gt;
 
-&lt;p&gt;Using the &lt;em&gt;up&lt;/em&gt; and &lt;em&gt;down&lt;/em&gt; arrow keys, or &lt;em&gt;j&lt;/em&gt; and &lt;em&gt;k&lt;/em&gt; you can move between functions (see how an * symbol works as a cursor when moving around functions in the list).&lt;/p&gt;
+&lt;p&gt;Using the &lt;em&gt;up&lt;/em&gt; and &lt;em&gt;down&lt;/em&gt; arrow keys, or &lt;em&gt;j&lt;/em&gt; and &lt;em&gt;k&lt;/em&gt; you can move between functions (see how an * symbol works as a cursor when moving around between functions in the list).&lt;/p&gt;
 
 &lt;p&gt;Using the &lt;em&gt;right&lt;/em&gt; arrow key, or &lt;em&gt;l&lt;/em&gt; key, specific options (that applies to the current selected function) are displayed that relates to actions like add, rename, type and so on.&lt;/p&gt;
 
@@ -223,13 +418,13 @@
 
 &lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/img14-r2-commands-panel-view.png&quot; alt=&quot;r2 commands panel view&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;When I first ever launched this view, the default interface displays 3 different panels, the bigger one shows the disassembled code, and the other ones shows an hex dum of the stack and the registers.&lt;/p&gt;
+&lt;p&gt;When I first ever launched this view, the default interface displayed 3 different panels, the bigger one showed the disassembled code, and the other ones showed an hex dum of the stack and the registers.&lt;/p&gt;
 
 &lt;p&gt;Being honest, at this point I’m not sure if those are the default panels, but don’t worry, we’ll explore how to customize them.&lt;/p&gt;
 
 &lt;p&gt;You can move between panels using the &lt;strong&gt;TAB key&lt;/strong&gt;.&lt;/p&gt;
 
-&lt;p&gt;As you can see, there are some options at the top of the window, you can access such options using the &lt;strong&gt;&lt;em&gt;-m command&lt;/em&gt;&lt;/strong&gt;. You can explore the options available moving with the arrow keys or h, j, k and l.&lt;/p&gt;
+&lt;p&gt;As you can see, there are some options at the top of the window, you can access such options using the &lt;strong&gt;&lt;em&gt;-m command-&lt;/em&gt;&lt;/strong&gt;. You can explore the options available moving with the &lt;strong&gt;&lt;em&gt;arrow keys&lt;/em&gt;&lt;/strong&gt; or &lt;strong&gt;&lt;em&gt;h, j, k and l&lt;/em&gt;&lt;/strong&gt;.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/radare2-basic-wf/img15-m-command-windows.png&quot; alt=&quot;m command windows&quot; /&gt;&lt;/p&gt;
 
@@ -257,7 +452,7 @@
 
 &lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;n&quot;&gt;pxW&lt;/span&gt; &lt;span class=&quot;vi&quot;&gt;@esp&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 
-&lt;p&gt;&lt;em&gt;px&lt;/em&gt; belog to the &lt;em&gt;print hexadecimal&lt;/em&gt; commands. &lt;em&gt;W&lt;/em&gt; specifies the size of the hex dump and stands for &lt;em&gt;word&lt;/em&gt; size. Notice that in radare2 a word is 32 bits. And &lt;em&gt;W&lt;/em&gt; is uppercase, which specifies that the output will be displayed one word per line.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;px&lt;/em&gt; belongs to the &lt;em&gt;print hexadecimal&lt;/em&gt; commands. &lt;em&gt;W&lt;/em&gt; specifies the size of the hex dump and stands for &lt;em&gt;word&lt;/em&gt; size. Notice that in radare2 a word is 32 bits. And &lt;em&gt;W&lt;/em&gt; is uppercase, which specifies that the output will be displayed one word per line.&lt;/p&gt;
 
 &lt;p&gt;And for the registers I just use the predefined one, using the DEL key.&lt;/p&gt;
 
@@ -275,9 +470,9 @@
 
 &lt;p&gt;The displayed disassembled code depends on the current seek, if you are located at main in the binary, then the disassembled code will be from main.&lt;/p&gt;
 
-&lt;p&gt;You can move around the graph view using the arrow keys and h, j, k and l keys.&lt;/p&gt;
+&lt;p&gt;You can move around the graph view using the &lt;strong&gt;&lt;em&gt;arrow keys&lt;/em&gt;&lt;/strong&gt; and &lt;strong&gt;&lt;em&gt;h, j, k and l keys&lt;/em&gt;&lt;/strong&gt;.&lt;/p&gt;
 
-&lt;p&gt;This view helps you see in a more ilustrative interface the branches created by &lt;em&gt;if&lt;/em&gt; statements, &lt;em&gt;switch cases&lt;/em&gt; and other conditional and non-conditional jumps in code.&lt;/p&gt;
+&lt;p&gt;This view helps you see in a more ilustrative interface the branches created by &lt;em&gt;if&lt;/em&gt; statements, &lt;em&gt;switch cases&lt;/em&gt; and other &lt;em&gt;conditional&lt;/em&gt; and &lt;em&gt;non-conditional&lt;/em&gt; jumps in code.&lt;/p&gt;
 
 &lt;h2 id=&quot;getting-help&quot;&gt;Getting help&lt;/h2&gt;
 

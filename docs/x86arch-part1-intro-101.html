@@ -1,0 +1,576 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.22.0 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>x86 Architecture: Architecture 101 - RodWaRE</title>
+<meta name="description" content="Welcome to this new series of posts, this time we’ll be talking about x86-64 computer architecture, specifically, on the firsts posts, I’ll give a very very basic introduction to computer architecture, how it works, CPU, memory and more, then in future posts we’ll discuss the hardware support that Intel 64 and IA-32 architectures give to Operating Systems to achieve:    Memory Management.   Memory Addressing.   Memory Protection.   Separation and protection between Kernel-space and User-space.   Interrupts.   Hardware I/O.">
+
+
+  <meta name="author" content="Rodo Gómez">
+  
+  <meta property="article:author" content="Rodo Gómez">
+  
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="RodWaRE">
+<meta property="og:title" content="x86 Architecture: Architecture 101">
+<meta property="og:url" content="http://localhost:4000/x86arch-part1-intro-101">
+
+
+  <meta property="og:description" content="Welcome to this new series of posts, this time we’ll be talking about x86-64 computer architecture, specifically, on the firsts posts, I’ll give a very very basic introduction to computer architecture, how it works, CPU, memory and more, then in future posts we’ll discuss the hardware support that Intel 64 and IA-32 architectures give to Operating Systems to achieve:    Memory Management.   Memory Addressing.   Memory Protection.   Separation and protection between Kernel-space and User-space.   Interrupts.   Hardware I/O.">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2021-04-02T15:45:00-06:00">
+
+
+
+
+
+
+<link rel="canonical" href="http://localhost:4000/x86arch-part1-intro-101">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": null,
+      "url": "http://localhost:4000/"
+    
+  }
+</script>
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<!--[if IE]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--posts">
+    <nav class="skip-links">
+  <h2 class="screen-reader-text">Skip links</h2>
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          RodWaRE
+          
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/about">About</a>
+            </li></ul>
+        
+        <button class="search__toggle" type="button">
+          <span class="visually-hidden">Toggle search</span>
+          <svg class="icon" width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15.99 16">
+            <path d="M15.5,13.12L13.19,10.8a1.69,1.69,0,0,0-1.28-.55l-0.06-.06A6.5,6.5,0,0,0,5.77,0,6.5,6.5,0,0,0,2.46,11.59a6.47,6.47,0,0,0,7.74.26l0.05,0.05a1.65,1.65,0,0,0,.5,1.24l2.38,2.38A1.68,1.68,0,0,0,15.5,13.12ZM6.4,2A4.41,4.41,0,1,1,2,6.4,4.43,4.43,0,0,1,6.4,2Z" transform="translate(-.01)"></path>
+          </svg>
+        </button>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+
+
+  <div class="archive">
+    
+      <h1 id="page-title" class="page__title">x86 Architecture: Architecture 101</h1>
+    
+    <p>Welcome to this new series of posts, this time we’ll be talking about <strong>x86-64 computer architecture</strong>, specifically, on the firsts posts, I’ll give a very very basic introduction to computer architecture, how it works, CPU, memory and more, then in future posts we’ll discuss the hardware support that Intel 64 and IA-32 architectures give to Operating Systems to achieve:</p>
+<ul>
+  <li>Memory Management.</li>
+  <li>Memory Addressing.</li>
+  <li>Memory Protection.</li>
+  <li>Separation and protection between Kernel-space and User-space.</li>
+  <li>Interrupts.</li>
+  <li>Hardware I/O.</li>
+</ul>
+
+<p>Besides talking about hardware specific support, we’ll explore <strong>how the Linux Kernel uses those hardware features</strong> from x86 processors through kernel debugging, analyzing kernel source code and implementing kernel modules that extract information to be analized.</p>
+
+<p>By the moment of writing this post, I’m not sure about how many parts will compose this series, so this post will be the first out of <em>n</em> posts within this new series.</p>
+
+<p>This first post will be about an introduction to computer architecture, we’ll discuss the components that a computer system has and how they interact between each other (just a general, but complete, description). 
+Notice that the content in this post will be just an introduction to all those concepts, even when I would try to give you a complete and general overview of the architecture of a computer system and how it works, I’m not pretending to touch every tiny detail about the subject.</p>
+
+<p>Any way, if you want to go deeper on the concepts discussed in this post, I’ll leave some useful references and links in the <strong>References</strong> section.</p>
+
+<p>So, without further ado, let’s get started.!</p>
+
+<h2 id="computer-architecture-101">Computer Architecture 101.</h2>
+
+<p>A <strong>computer system</strong> consists of different components and subsystems that work together creating a system able to compute instructions that solve specific tasks. In order to build this kind of system, there are different ways in which you can design it, define its components, its organization and ultimately how everything works within such system. That computer’s design is called the <strong><em>Computer Architecture</em></strong>.</p>
+
+<p>One of the most well known and implemented computer architecture in today’s computer systems is the <a href="https://en.wikipedia.org/wiki/Von_Neumann_architecture"><strong><em>Von Neumann Architecture.</em></strong></a>.</p>
+
+<p>There are other computer architectures that are well known and actually implemented by different processors and real applications, such as the <a href="https://en.wikipedia.org/wiki/Harvard_architecture">Hardvard Architecture</a>. Von Neumann Architecture and Hardvard Architecture have many things in common, but they differ in how some componets interact between each other, how they store and retrieve information depending on the type of information (machine instructions against data) and so on. Any way, since Intel processors implement Von Neumann Architecture, the concepts and theory about computer architecture discussed in this series will relate to Von Neumann Architecture.</p>
+
+<h2 id="system-organization">System Organization.</h2>
+
+<p>Simplifying things, computer systems based on Von Neumann Architecture consist mainly in 3 well defined components:</p>
+
+<ul>
+  <li>CPU.</li>
+  <li>Memory (RAM).</li>
+  <li>I/O Devices.</li>
+</ul>
+
+<p>And then, the CPU have another set of components within it:</p>
+
+<ul>
+  <li>Control Unit (CU).</li>
+  <li>Aritmetic Logic Unit (ALU).</li>
+  <li>Registers.</li>
+</ul>
+
+<p><img src="assets/computer-arch-series/von-neumman-arch.png" alt="Von Neumann Arch" /></p>
+
+<p>There are some processors that implement other hardware features such as caches, or even more than one processor within a single chip.</p>
+
+<p><strong>Basic system functionality.</strong></p>
+
+<p>One of the most important features that Von Neumann brought with this architecture is that <strong>CPU instructions and data from processes are stored in memory</strong> when they are loaded to be executed, then, when a process is executing, <strong>the CPU retreives CPU instructions and data</strong> as needed. This was not the case in the early’s days of computing, when only data could be stored in memory and hardware circuitry had to be modified for each program to be properly executed. Because of this, Von Neumann Architecture systems are also referred as <strong>stored-program computers.</strong></p>
+
+<p>All computations occur inside the CPU, as mentioned before, it retrieves information (CPU instructions and/or data) from memory and stores information in memory as needed as well. The CPU instructions are retreived and executed one by one, data is stored or retreived as needed, and when the execution of the current instruction is finished, then the CPU fetches the next one and repeats the cycle (this is the normal workflow of execution if we don’t consider <strong>interrupts</strong>, I’ll cover software and hardware interrupts in a future post).</p>
+
+<p>It might be the case that the current executing process requires access to a hardware device that is connected to the CPU, in that case, the CPU communicates with I/O devices either sending or fetching information to/from them.</p>
+
+<p>In this type of computer architecture, to the CPU, <strong>dealing with most I/O devices is practically the same as dealing with memory</strong>. To the CPU, I/O devices and memory are just external components to which it can interact with by sending or fetching data to/from them. Any way, there are differences in the way CPUs exchange information between memory and I/O devices, and of course, we’ll talk about it :D.</p>
+
+<p><img src="assets/computer-arch-series/system-bus-book.png" alt="System bus book" /></p>
+
+<p><em>Image from Art of Intel x86 Assembly book (see References section)</em></p>
+
+<p>All this components, I/O devices, memory and the CPU, need a way to exchange information between them and the way in which that comunication is implemented is called <strong>the System Bus</strong></p>
+
+<h2 id="the-system-bus">The System Bus.</h2>
+
+<p>In simple terms, <strong>the System Bus is just a set of electrical conexions that exists in the physical circuit</strong> (mother board of the computer) and this bus interconnects all the components in the computer system. The System Bus is literally a <strong>set of wires that transport electrical signals</strong> between computer components.</p>
+
+<p>The specific implementation of the System Bus depends totally on the characteristics of the processor that’s being used but the function of the bus is always the same, to transport electrical signals between components allowing communication between them.</p>
+
+<p>A typical x86 processor uses <em>standard TTL logic levels</em> as voltage for the transmitted signals. A standard TTL logic level <em>zero</em> is represented by a voltage in the range 0.0 - 0.8v, whereas a logic <em>one</em> is represented by a voltage level in the range 2.4 - 5v.</p>
+
+<p>The System Bus can be divided in 3 different busses:</p>
+
+<ul>
+  <li>Data Bus.</li>
+  <li>Address Bus.</li>
+  <li>Control Bus.</li>
+</ul>
+
+<p><img src="assets/computer-arch-series/system-bus.png" alt="System bus" /></p>
+
+<p>These busses have their own porpuse, but remember, all of them have the same essential function, transport electrical signals between components, the meaning of this signals and what information do the busses carry is what defines the specific function of each bus in the system.</p>
+
+<p><strong>The Data Bus.</strong></p>
+
+<p>As it’s name suggests, <strong>the Data Bus is used to shuffle data between the computer system components</strong>. Historically, the size (I mean, how many wires the bus has) has changed between different processors, having size values of:</p>
+
+<ul>
+  <li>8 bits.</li>
+  <li>16 bits.</li>
+  <li>32 bits.</li>
+  <li>64 bits.</li>
+</ul>
+
+<p>As you might expect, the newer the processor the bigger the data bus size.</p>
+
+<p>Even though all busses have different sizes between processors (data bus, control bus and address bus), <strong>the Data Bus size has more impact on the performance of the system than the other ones.</strong> Practically, a system with a 16 bit data bus is twice as fast as a system with an 8 bit data bus. And sure, having a 32 bit data bus means that the circuit has 32 physical wires, each wire is equivalent to a bit.</p>
+
+<p>That way, the CPU is capable of moving data to/from memory in chunks of the same size of the data bus <strong>per memory cycle</strong> (by memory cycle, I mean the entire event of storing or fetching data and it’s totally different than CPU cycles, so don’t confuse them). In a system with an 8 bit data bus, it takes one memory cycle to fetch 8 bits of data, twice for 16 bits and so on.</p>
+
+<p>It’s important to notice that the size of the data bus <strong>does not limit the size of data types that a process (program) can use</strong>. You can have 32 bit data types in a program that is running on a system with a data bus of 16 bits, this only means that it will take two memory cycles to fetch the entire 32 bit data.</p>
+
+<p><strong>Have you heard someone saying “I have a 32-bit system” or “my laptop is a 64-bit computer”?</strong> Well, it turns out that <strong>the size of the Data Bus determines what’s called the size of the processor.</strong> That way, a system with an 8 bit data bus is called an 8 bit processor, same way, a 32 bit processor has a 32 bit data bus.</p>
+
+<p>Notice that the data bus is not only used to move data between the CPU and memory, <strong>it is used as well for moving data between I/O devices and the CPU</strong>. In fact, some I/O devices can appear another section in the accesible memory (remember that to the CPU, most I/O devices are kind of the same as memory).</p>
+
+<p>The CPU needs a way to specify from where in memory or from where in an I/O device it wants to fecth data (or store data). The solution to this is provided by the address bus.</p>
+
+<p><strong>The Address Bus.</strong></p>
+
+<p>The CPU uses the address bus to specify the <strong>location, AKA address, from where it wants to retrieve data</strong> (and again, to where store it) either from memory or from an I/O device. So every time the CPU wants to access information in memory or in I/O devices, it just places the corresponding address in the Address Bus.</p>
+
+<p>Memory and I/O devices have internal circuitry as well, when the CPU requests information from a specific address, the circuitry from memory and I/O devices recognizes that they contain the address requested by the processor, if they have such address of course, and acts in response (storing or sending data). If they don’t recongnize the address, they just ignore it.</p>
+
+<p>The amount of wires that the Address Bus has <strong>determines the amount of physical addressable memory.</strong> That way, if you have an address bus with just one wire, you’d be able to address only two unique addresses, 0 and 1.</p>
+
+<p>Firsts x86 processors had an address bus of 20 bits (wires) which allows them to address up to 1,048,576 different locations, which is the same as 1 MegaByte of addressable memory.</p>
+
+<p>Modern processors have a 32 bits address bus, which allows them to address up to 4,294,976,296, or 4GB of addressable memory. There exist hardware mechanisms that allow an expansion of addressable memory increasing the address bus from a 32 bit address bus to a 36 bit address bus, allowing the processor to address up to 64GB of memory, but we’ll discuss it in a future post :D.</p>
+
+<p>Notice that <strong>memory and I/O devices share the same address bus!</strong></p>
+
+<p>Something important is, <strong>the maximum amount of addressable memory is always the same as the address bus size, but the address bus size for I/O devices is always 16 bits long</strong>, what happens is that when accessing memory, all the address bus is used to specify the location in memory, but when accessing I/O devices, only the 16 <em>least significat bits</em> of the address bus are used. In consequence the processor is able to address up to 65,536 different I/O locations.</p>
+
+<p>If the CPU sees memory and I/O as the same thing, how does the CPU specify that the resquested address belongs to a memory location and not to a I/O device and vice versa? How does the CPU communicates that it wants to store some data at a specific address instead of fetching data from that same address?
+To solve this issues, the control bus comes into the picture!</p>
+
+<p><strong>The Control Bus.</strong></p>
+
+<p>This is probably the bus that has more differences between different processors, in simple terms, the control bus is used by the CPU to send specific signals to the rest of the components that determines how it wants to communicates. For example, <strong>there are 2 dedicated wires in the control bus used to specify if the CPU wants to <em>read</em> data from memory or it it wants to <em>write</em> data to memory.</strong></p>
+
+<p>As I said, there are different designs of the control bus, but regardless those differences, there are some signals that are common between processors.</p>
+
+<p>There are signals in the control bus that are used to specify when the CPU wants to <em>read</em> or <em>write</em> data, as well as signals used to specify if the CPU wants to access memory or an I/O device.</p>
+
+<p>So when the CPU wants to read something from memory, it places the desired address in the address bus, and it places the respective values in the control bus specifying it wants to read instead of writing, and that it want such information from memory and not an I/O device, finally the circuitry from memory recognizes that the CPU is asking for some information from it at an specific location, if such address exists, memory places the data in the data bus and the CPU just reads it, and that’s how (in a general description) communication between CPU and memory occurs.</p>
+
+<p><img src="assets/computer-arch-series/read-memory.png" alt="System bus" /></p>
+
+<p>And in the other hand, the control bus places the respective signal on the control bus specifying it wants to write some data in memory.</p>
+
+<p><img src="assets/computer-arch-series/write-memory.png" alt="System bus" /></p>
+
+<p><em>Images form Art of Intel x86 Assembly book</em></p>
+
+<p>When the CPU wants information from an I/O device, the process is mostly the same, with the only difference that the CPU places in the control bus a signal specifying that it wants such information from I/O instead of memory. In this scenario, circuitry in the I/O device recognize that the CPU requested information from it, and if it contains the requested address, it responds placing the information located at such address in the data bus. And remember, the address bus for I/O devices is always 16 bits, so the CPU places the requested address in the address bus, but using the <em>least significant bits</em> in the address bus and the remaining bits are just ignored.</p>
+
+<p>NOTE: By the moment of writing this post I haven’t found that much information about the exact configuration of the control bus signals on different processors, because of that I’m not able to specify the name of the signals, the values and interpretation they have on real processors D:, any way as soon as I get more information I’ll update this post :D.</p>
+
+<h2 id="lets-talk-about-memory">Let’s talk about memory.</h2>
+
+<p>Just before the end of this post, let’s talk about memory.
+x86 processors supports <strong>byte addressable memory</strong>, which this means is that the smallest and more basic unit of memory that x86 processors are able to access is a single byte (a byte is equal to 8 bits).</p>
+
+<p>You can imagine memory as an array of cells, <strong>each cell can store 1 byte</strong>, or in other words, each cell is composed of 8 bits, and the exact location of each cell within the array is what is known as the <strong>memory address</strong>.</p>
+
+<p><img src="assets/computer-arch-series/memory-ram.png" alt="Memory Ram" /></p>
+
+<p>Memory addresses will be always given in hexadecimal numbers, so it’s really important that you understand numerical systems and conversions.</p>
+
+<p>When dealing with memory values and addresses, you will notice that some places uses the terms <em>word, byte, double word</em> and so on, so let’s explain it.</p>
+
+<p>The most basic unit of memory (I’m talking about unit of memory itself, not unit of addressable memory by the CPU) is a <strong>bit</strong>, with it you can represent 2 values, 0 or 1, and those two values could mean whatever you want them to mean, black and white, on or off, up or down, or even 7541 and 500.</p>
+
+<p>Then, there are the <strong>nibbles</strong>, a nibble is a collection of <strong>4 bits</strong> and the bit that is at the most right side is called the <em>least significant bit (LSB)</em> in contrast with the most left side bit, which is called <em>the most significant bit (MSB)</em>.</p>
+
+<p>Then we have a <strong>byte</strong>, a byte is composed of <strong>8 bits, or 2 nibbles</strong>, the nibble that is at the right is called the <em>Low Order nibble</em> and the other one is called the <em>High Order nibble</em>, this because the LO nibble contains the LSB and the HO nibble contains the MSB.</p>
+
+<p>Then we have a <strong>word</strong>, a word consists of <strong>16 bits, or 2 bytes, or 4 nibbles.</strong> It also has its LO nibble and HO nibble plus its HO byte and its LO byte.</p>
+
+<p>Then there is the <strong>double word</strong>, a double word contains <strong>32 bits, or 4 bytes, or 8 nibbles</strong>, and it has its LO and HO nibbles, bytes and words.</p>
+
+<p><img src="assets/computer-arch-series/memory-units.jpg" alt="Memory Ram" /></p>
+
+<p>This terms apply when you are talking about memory values, sizes of data types and other cases, for instance, when reading assembly, you might see an instrucction saying something like:</p>
+
+<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="no">MOV</span> <span class="n">eax</span><span class="p">,</span> <span class="no">DWORD</span> <span class="no">PTR</span> <span class="p">[</span><span class="n">ebx</span><span class="p">]</span></code></pre></figure>
+
+<p>That <em>dword</em> is telling that this assembly instrucction requires to access a value in memory that is a double word value, or a 4 bytes value.</p>
+
+<p>Well, this is already a huge post, it might be kind of boring to learn this things, I tried to be as brief as possible but complete and concrete at the same time.</p>
+
+<p>In the next post, (I’ll try to bring it soon xD), I’ll dive deep on the CPU, we’ll talk about the internals of the CPU, how they work, instruction set, registers and more, so I hope you find this post useful and informative and I encourage you to dive deeper in the subject if you are interested in.</p>
+
+<h2 id="references">References.</h2>
+
+<ul>
+  <li><a href="https://en.wikipedia.org/wiki/Von_Neumann_architecture">Von Neumann Architecture.</a></li>
+  <li><a href="https://en.wikipedia.org/wiki/Harvard_architecture">Hardvard Architecture.</a></li>
+  <li><a href="https://en.wikipedia.org/wiki/System_bus">System Bus.</a></li>
+  <li><a href="https://archive.org/details/ArtOfIntelX86Assembly/page/n67/mode/2up">The Art Of Intel x86 Assembly.</a></li>
+</ul>
+
+
+
+<ul class="taxonomy__index">
+  
+  
+    <li>
+      <a href="#2021">
+        <strong>2021</strong> <span class="taxonomy__count">3</span>
+      </a>
+    </li>
+  
+</ul>
+
+
+
+
+  <section id="2021" class="taxonomy__section">
+    <h2 class="archive__subtitle">2021</h2>
+    <div class="entries-list">
+      
+        
+
+
+
+<div class="list__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/x86arch-part1-intro-101" rel="permalink">x86 Architecture: Architecture 101
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-calendar-alt" aria-hidden="true"></i>
+        <time datetime="2021-04-02T15:45:00-06:00">April 2, 2021</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-clock" aria-hidden="true"></i>
+        
+          14 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">Welcome to this new series of posts, this time we’ll be talking about x86-64 computer architecture, specifically, on the firsts posts, I’ll give a very very ...</p>
+  </article>
+</div>
+
+      
+        
+
+
+
+<div class="list__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/radare2-basic-workflow-and-usage-part2" rel="permalink">Radare2: Basic workflow and usage - Part 2
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-calendar-alt" aria-hidden="true"></i>
+        <time datetime="2021-03-08T15:45:00-06:00">March 8, 2021</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-clock" aria-hidden="true"></i>
+        
+          11 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">This is the second post out of two that describes the usage of Radare2 to perform basic tasks that relate to binary analysis. In the previous post a brief in...</p>
+  </article>
+</div>
+
+      
+        
+
+
+
+<div class="list__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/radare2-basic-workflow-and-usage" rel="permalink">Radare2: Basic workflow and usage - Part 1
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-calendar-alt" aria-hidden="true"></i>
+        <time datetime="2021-02-22T15:45:00-06:00">February 22, 2021</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-clock" aria-hidden="true"></i>
+        
+          7 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">This is the first post out of two that describes the usage of Radare2 to perform basic tasks that relate to binary analysis. That way, instead of explaining ...</p>
+  </article>
+</div>
+
+      
+    </div>
+    <a href="#page-title" class="back-to-top">Back to Top &uarr;</a>
+  </section>
+
+
+  </div>
+</div>
+    </div>
+
+    
+      <div class="search-content">
+        <div class="search-content__inner-wrap"><form class="search-content__form" onkeydown="return event.key != 'Enter';">
+    <label class="sr-only" for="search">
+      Enter your search term...
+    </label>
+    <input type="search" id="search" class="search-input" tabindex="-1" placeholder="Enter your search term..." />
+  </form>
+  <div id="results" class="results"></div></div>
+
+      </div>
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+
+    
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2021 RodWaRE. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+<script src="/assets/js/lunr/lunr.min.js"></script>
+<script src="/assets/js/lunr/lunr-store.js"></script>
+<script src="/assets/js/lunr/lunr-en.js"></script>
+
+
+
+
+
+
+
+  </body>
+</html>

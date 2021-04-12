@@ -234,7 +234,7 @@
 
 <p>Something important you have to remember is that in visual mode not all the r2 commands are available, and there are commands that do a different thing in visual mode compared with command mode.</p>
 
-<p>This mode does not provide only one interface to the user, instead, visual modes consists of a set of <strong><em>print modes</em></strong>, also referred as <strong><em>panels</em></strong>.</p>
+<p>This mode does not provide only one interface to the user, instead, visual mode consists of a set of <strong><em>print modes</em></strong>, also referred as <strong><em>panels</em></strong>.</p>
 
 <p>Something that is a little bit confusing at the beginning, and that is important that you understand, is that such print modes share some commands (those commands do the same regardless the print mode), but there are other commands that does not do the same action and even, there are commands that are present in some print modes but aren’t in others.</p>
 
@@ -248,7 +248,7 @@
 
 <p>There is a special print mode, full of different functionalities and options, and it’s almost like if it was actually a third mode in r2, called <strong><em>Panels view</em></strong>, (which is the print mode that I personally use the most) but officially it is another print mode within visual mode, we’ll explore this special print mode last.</p>
 
-<p>You can switch between print modes, but before explain that, let’s switch to Visual mode first.</p>
+<p>You can switch between print modes, but before explaining that, let’s switch to Visual mode first.</p>
 
 <p><strong>Switching to visual mode</strong></p>
 
@@ -276,7 +276,7 @@
 
 <p>At this point, our current seek is the very beginning of our binary code, we can move around and explore the disassembled code using the <em>arrow keys or h, j, k, and l keys</em>, same as the ones you use in the Vim text editor.</p>
 
-<p>Moving using such keys allows you to navigate the disassembly code but only one line at a time.</p>
+<p>Moving using such keys allows you to navigate the disassembled code but only one line at a time.</p>
 
 <p>You can go directly to specific locations, like a specific function or a specific part of the binary if you know its location within the binary, by using the flag of such function or binary location using the <strong><em>_ command</em></strong>. Let’s supose you want to go to the main function, just type _ and a list of r2 flags will be displayed:</p>
 
@@ -302,7 +302,7 @@
 
 <p>As you can see, a list of all the functions of our binary is displayed and a preview of the disassembled code of the selected function is showed as well.</p>
 
-<p>Using the <em>up</em> and <em>down</em> arrow keys, or <em>j</em> and <em>k</em> you can move between functions (see how an * symbol works as a cursor when moving around functions in the list).</p>
+<p>Using the <em>up</em> and <em>down</em> arrow keys, or <em>j</em> and <em>k</em> you can move between functions (see how an * symbol works as a cursor when moving around between functions in the list).</p>
 
 <p>Using the <em>right</em> arrow key, or <em>l</em> key, specific options (that applies to the current selected function) are displayed that relates to actions like add, rename, type and so on.</p>
 
@@ -387,13 +387,13 @@
 
 <p><img src="/assets/radare2-basic-wf/img14-r2-commands-panel-view.png" alt="r2 commands panel view" /></p>
 
-<p>When I first ever launched this view, the default interface displays 3 different panels, the bigger one shows the disassembled code, and the other ones shows an hex dum of the stack and the registers.</p>
+<p>When I first ever launched this view, the default interface displayed 3 different panels, the bigger one showed the disassembled code, and the other ones showed an hex dum of the stack and the registers.</p>
 
 <p>Being honest, at this point I’m not sure if those are the default panels, but don’t worry, we’ll explore how to customize them.</p>
 
 <p>You can move between panels using the <strong>TAB key</strong>.</p>
 
-<p>As you can see, there are some options at the top of the window, you can access such options using the <strong><em>-m command</em></strong>. You can explore the options available moving with the arrow keys or h, j, k and l.</p>
+<p>As you can see, there are some options at the top of the window, you can access such options using the <strong><em>-m command-</em></strong>. You can explore the options available moving with the <strong><em>arrow keys</em></strong> or <strong><em>h, j, k and l</em></strong>.</p>
 
 <p><img src="/assets/radare2-basic-wf/img15-m-command-windows.png" alt="m command windows" /></p>
 
@@ -421,7 +421,7 @@
 
 <figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">pxW</span> <span class="vi">@esp</span></code></pre></figure>
 
-<p><em>px</em> belog to the <em>print hexadecimal</em> commands. <em>W</em> specifies the size of the hex dump and stands for <em>word</em> size. Notice that in radare2 a word is 32 bits. And <em>W</em> is uppercase, which specifies that the output will be displayed one word per line.</p>
+<p><em>px</em> belongs to the <em>print hexadecimal</em> commands. <em>W</em> specifies the size of the hex dump and stands for <em>word</em> size. Notice that in radare2 a word is 32 bits. And <em>W</em> is uppercase, which specifies that the output will be displayed one word per line.</p>
 
 <p>And for the registers I just use the predefined one, using the DEL key.</p>
 
@@ -439,9 +439,9 @@
 
 <p>The displayed disassembled code depends on the current seek, if you are located at main in the binary, then the disassembled code will be from main.</p>
 
-<p>You can move around the graph view using the arrow keys and h, j, k and l keys.</p>
+<p>You can move around the graph view using the <strong><em>arrow keys</em></strong> and <strong><em>h, j, k and l keys</em></strong>.</p>
 
-<p>This view helps you see in a more ilustrative interface the branches created by <em>if</em> statements, <em>switch cases</em> and other conditional and non-conditional jumps in code.</p>
+<p>This view helps you see in a more ilustrative interface the branches created by <em>if</em> statements, <em>switch cases</em> and other <em>conditional</em> and <em>non-conditional</em> jumps in code.</p>
 
 <h2 id="getting-help">Getting help</h2>
 
@@ -465,7 +465,7 @@
   
     <li>
       <a href="#2021">
-        <strong>2021</strong> <span class="taxonomy__count">2</span>
+        <strong>2021</strong> <span class="taxonomy__count">3</span>
       </a>
     </li>
   
@@ -477,6 +477,51 @@
   <section id="2021" class="taxonomy__section">
     <h2 class="archive__subtitle">2021</h2>
     <div class="entries-list">
+      
+        
+
+
+
+<div class="list__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/x86arch-part1-intro-101" rel="permalink">x86 Architecture: Architecture 101
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-calendar-alt" aria-hidden="true"></i>
+        <time datetime="2021-04-02T15:45:00-06:00">April 2, 2021</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-clock" aria-hidden="true"></i>
+        
+          14 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">Welcome to this new series of posts, this time we’ll be talking about x86-64 computer architecture, specifically, on the firsts posts, I’ll give a very very ...</p>
+  </article>
+</div>
+
       
         
 

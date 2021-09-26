@@ -1,580 +1,390 @@
-<!doctype html>
-<!--
-  Minimal Mistakes Jekyll Theme 4.22.0 by Michael Rose
-  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
-  Free for personal and commercial use under the MIT license
-  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
--->
-<html lang="en" class="no-js">
-  <head>
-    <meta charset="utf-8">
+<html>
+<head>
+<title>Radare2. P1</title>
+<meta charset="utf-8">
 
-<!-- begin _includes/seo.html --><title>Radare2: Basic workflow and usage - Part 1 - RodWaRE</title>
-<meta name="description" content="This is the first post out of two that describes the usage of Radare2 to perform basic tasks that relate to binary analysis. That way, instead of explaining what a bunch of Radare commands do, this post goes through a basic workflow from opening a binary file, gather basic information about it, dissasemble it, explaining and working with the different modes that Radare2 offers and explore the disassembled binary.">
+<body>
+<center><div style="display: inline-block; text-align: left;"><pre><font color=#93ffd7>
 
-
-  <meta name="author" content="Rodo Gómez">
-  
-  <meta property="article:author" content="Rodo Gómez">
-  
-
-
-<meta property="og:type" content="article">
-<meta property="og:locale" content="en_US">
-<meta property="og:site_name" content="RodWaRE">
-<meta property="og:title" content="Radare2: Basic workflow and usage - Part 1">
-<meta property="og:url" content="http://localhost:4000/radare2-basic-workflow-and-usage">
-
-
-  <meta property="og:description" content="This is the first post out of two that describes the usage of Radare2 to perform basic tasks that relate to binary analysis. That way, instead of explaining what a bunch of Radare commands do, this post goes through a basic workflow from opening a binary file, gather basic information about it, dissasemble it, explaining and working with the different modes that Radare2 offers and explore the disassembled binary.">
+ ███████████                 █████                               ████████        ███████████  ████    
+░░███░░░░░███               ░░███                               ███░░░░███      ░░███░░░░░███░░███    
+ ░███    ░███   ██████    ███████   ██████   ████████   ██████ ░░░    ░███       ░███    ░███ ░███    
+ ░██████████   ░░░░░███  ███░░███  ░░░░░███ ░░███░░███ ███░░███   ███████        ░██████████  ░███    
+ ░███░░░░░███   ███████ ░███ ░███   ███████  ░███ ░░░ ░███████   ███░░░░         ░███░░░░░░   ░███    
+ ░███    ░███  ███░░███ ░███ ░███  ███░░███  ░███     ░███░░░   ███      █       ░███         ░███    
+ █████   █████░░████████░░████████░░████████ █████    ░░██████ ░██████████       █████        █████ ██
+░░░░░   ░░░░░  ░░░░░░░░  ░░░░░░░░  ░░░░░░░░ ░░░░░      ░░░░░░  ░░░░░░░░░░       ░░░░░        ░░░░░ ░░ 
 
 
 
+                                                                                                      
+</pre></div></center></body></font>
 
 
-
-
-  <meta property="article:published_time" content="2021-02-22T15:45:00-06:00">
-
-
-
-
-
-
-<link rel="canonical" href="http://localhost:4000/radare2-basic-workflow-and-usage">
-
-
-
-
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    
-      "@type": "Person",
-      "name": null,
-      "url": "http://localhost:4000/"
-    
-  }
-</script>
-
-
-
-
-
-
-<!-- end _includes/seo.html -->
-
-
-
-
-<!-- https://t.co/dKP3o1e -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<script>
-  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
-</script>
-
-<!-- For all browsers -->
-<link rel="stylesheet" href="/assets/css/main.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
-
-<!--[if IE]>
-  <style>
-    /* old IE unsupported flexbox fixes */
-    .greedy-nav .site-title {
-      padding-right: 3em;
+<style>
+    body {
+      color: #FEFEFE;
+      background-color: #0c0d10;
+      margin: 0 auto;
+      padding: 1em 0 1em 0;
     }
-    .greedy-nav button {
-      position: absolute;
-      top: 0;
-      right: 0;
-      height: 100%;
-    }
-  </style>
-<![endif]-->
+       pre { font-family: "gohu", "Lucida Console", monospace, Monaco; font-size: 18px; line-height: 1.15; }
+         a { color: #93ffd7; text-decoration: none; }
+</style>
+</head>
 
-
-    <!-- start custom head snippets -->
+<body>
+<center><div style="display: inline-block; text-align: left;"><pre>
 
-<!-- insert favicons. use https://realfavicongenerator.net/ -->
-
-<!-- end custom head snippets -->
-
-  </head>
-
-  <body class="layout--posts">
-    <nav class="skip-links">
-  <h2 class="screen-reader-text">Skip links</h2>
-  <ul>
-    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
-    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
-    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
-  </ul>
-</nav>
-
-    <!--[if lt IE 9]>
-<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
-<![endif]-->
-
-    
-
-<div class="masthead">
-  <div class="masthead__inner-wrap">
-    <div class="masthead__menu">
-      <nav id="site-nav" class="greedy-nav">
-        
-        <a class="site-title" href="/">
-          RodWaRE
-          
-        </a>
-        <ul class="visible-links"><li class="masthead__menu-item">
-              <a href="/about">About</a>
-            </li></ul>
-        
-        <button class="search__toggle" type="button">
-          <span class="visually-hidden">Toggle search</span>
-          <svg class="icon" width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15.99 16">
-            <path d="M15.5,13.12L13.19,10.8a1.69,1.69,0,0,0-1.28-.55l-0.06-.06A6.5,6.5,0,0,0,5.77,0,6.5,6.5,0,0,0,2.46,11.59a6.47,6.47,0,0,0,7.74.26l0.05,0.05a1.65,1.65,0,0,0,.5,1.24l2.38,2.38A1.68,1.68,0,0,0,15.5,13.12ZM6.4,2A4.41,4.41,0,1,1,2,6.4,4.43,4.43,0,0,1,6.4,2Z" transform="translate(-.01)"></path>
-          </svg>
-        </button>
-        
-        <button class="greedy-nav__toggle hidden" type="button">
-          <span class="visually-hidden">Toggle menu</span>
-          <div class="navicon"></div>
-        </button>
-        <ul class="hidden-links hidden"></ul>
-      </nav>
-    </div>
-  </div>
-</div>
+This is the first post out of two that describes the usage of Radare2 to perform basic 
+tasks that relate to binary analysis. That way, instead of explaining what a bunch of 
+Radare commands do, this post goes through a basic workflow from opening a binary file, 
+gather basic information about it, dissasemble it, explaining and working with the 
+different modes that Radare2 offers and explore the disassembled binary.
 
+<font color=#93ffd7>NOTE:</font> Debugging a binary file deserves its own post so it will be covered in a 
+future post.
 
-    <div class="initial-content">
-      
 
 
+<h3><font color=#93ffd7>Let's begin: What's Radare2?</font></h3>
+Radare2, also known as <font color=#93ffd7>r2</font>, is the integration of a set of Unix-like, open source, 
+tools to perform binary analysis from different standpoints of view. As any Unix-like 
+application, r2 provides a <font color=#93ffd7>command-line inteface</font> to interact with. 
 
-<div id="main" role="main">
-  
+There exist GUIs such as <a href=https://github.com/rizinorg/cutter><u>Cutter</u></a>, which is powered by <a href=https://github.com/rizinorg/rizin><u>Rizin</u></a> (a fork of r2 focused
+on usability). 
 
+Because of its capabilities, r2 can be seen as:
 
-  <div class="archive">
-    
-      <h1 id="page-title" class="page__title">Radare2: Basic workflow and usage - Part 1</h1>
-    
-    <p>This is the first post out of two that describes the usage of Radare2 to perform basic tasks that relate to binary analysis. That way, instead of explaining what a bunch of Radare commands do, this post goes through a basic workflow from opening a binary file, gather basic information about it, dissasemble it, explaining and working with the different modes that Radare2 offers and explore the disassembled binary.</p>
+    * A reverse engineering framework.
+    * A forensics tool for binaries.
+    * A debugging tool.
+    * An exploit development framework.
+    * and much more...
 
-<p><strong>NOTE:</strong> Debugging a binary file deserves its own post so it will be covered in a future post.</p>
+You can get r2 from its <a href=https://github.com/radareorg/radare2><u>Official GitHub repo.</u></a> Instructions about how to clone it, 
+install it and set it up can be found there.
 
-<h2 id="lets-begin-whats-radare2">Let’s begin: What’s Radare2?</h2>
+If you wish to read a more extended documentation about r2, you can go through its 
+<a href=https://book.rada.re/><u>Official book</u></a> as well.
 
-<p>Radare2, also known as <strong>r2</strong>, is the integration of a set of Unix-like, <strong>open source</strong>, tools to perform binary analysis from different standpoints of view. As any <em>Unix-like</em> application, r2 provides a <strong>command-line inteface</strong> to interact with.</p>
 
-<p>There exist GUIs such as <a href="https://github.com/rizinorg/cutter">Cutter</a>, which is powered by <a href="https://github.com/rizinorg/rizin">Rizin</a> (a fork of r2 focused on usability).</p>
 
-<p>Because of its capabilities, r2 can be seen as:</p>
+<h3><font color=#93ffd7>Before we jump into it:</font></h3>
+For this series of posts, we are going to use the following simple C program:
 
-<ul>
-  <li>A reverse engineering framework.</li>
-  <li>A forensics tool for binaries.</li>
-  <li>A debugging tool.</li>
-  <li>An exploit development framework.</li>
-  <li>and much more…</li>
-</ul>
+┌
+│
+│    int sum(int x, int y){
+│        return x + y;
+│    }
+│
+│    int mul(int x, int y){
+│        return x * y;
+│    }
+│     
+│    int main(){ 
+│        int a = 10, b = 5, c = 0, d = 0;
+│        c = sum(a ,b);
+│        d = mul(a, b);
+│
+│        if(c < d)
+│            return c;
+│        else
+│            return d;
+│     
+│        return 0xdefea7;
+│    }
+│
+└
 
-<p>You can get r2 from its <a href="https://github.com/radareorg/radare2">Official GitHub repo</a>. Instructions about how to clone it, install it and set it up can be found there.</p>
+<font color=#93ffd7>NOTE:</font> In this series of posts we will be working with x86 binaries under the Linux OS so,
+the code above was compiled with the following command:
 
-<p>If you wish to read a more extended documentation about r2, you can go through its <a href="https://book.rada.re/">Official book</a> as well.</p>
 
-<h2 id="before-we-jump-into-it">Before we jump into it:</h2>
+┌                                             ┐
+│   <font color=#93ffd7>$</font> gcc -m32 -o post-sample post-sample.c   │
+└                                             ┘
 
-<p>For this series of posts, we are going to use the following simple C program:</p>
 
-<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">int</span> <span class="n">sum</span><span class="p">(</span><span class="n">int</span> <span class="n">x</span><span class="p">,</span> <span class="n">int</span> <span class="n">y</span><span class="p">){</span>
-    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">;</span>
-<span class="p">}</span>
+Where <font color=#93ffd7>-m32</font> is the compilation flag used to specify that we want gcc to compile our code 
+for <font color=#93ffd7>x86 architecture (32 bits)</font>.
 
-<span class="n">int</span> <span class="n">mul</span><span class="p">(</span><span class="n">int</span> <span class="n">x</span><span class="p">,</span> <span class="n">int</span> <span class="n">y</span><span class="p">){</span>
-    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span><span class="p">;</span>
-<span class="p">}</span>
- 
-<span class="n">int</span> <span class="n">main</span><span class="p">(){</span> 
-    <span class="n">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="n">c</span> <span class="o">=</span> <span class="n">sum</span><span class="p">(</span><span class="n">a</span> <span class="p">,</span><span class="n">b</span><span class="p">);</span>
-    <span class="n">d</span> <span class="o">=</span> <span class="n">mul</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">);</span>
+So we have now an x86 binary ready to be analyzed with r2.
 
-    <span class="k">if</span><span class="p">(</span><span class="n">c</span> <span class="o">&lt;</span> <span class="n">d</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">c</span><span class="p">;</span>
-    <span class="k">else</span>
-        <span class="k">return</span> <span class="n">d</span><span class="p">;</span>
- 
-    <span class="k">return</span> <span class="mh">0xdefea7</span><span class="p">;</span>
-<span class="p">}</span></code></pre></figure>
 
-<p><strong>NOTE:</strong> In this series of posts we will be working with x86 binaries under the Linux OS so, the code above was compiled with the following command:</p>
 
-<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="err">$</span> <span class="n">gcc</span> <span class="o">-</span><span class="n">m32</span> <span class="o">-</span><span class="n">o</span> <span class="n">post</span><span class="o">-</span><span class="n">sample</span> <span class="n">post</span><span class="o">-</span><span class="n">sample</span><span class="p">.</span><span class="nf">c</span></code></pre></figure>
+<h3><font color=#93ffd7>Opening a binary with Radare2</font></h3>
+As mentioned before, r2 is a set of Unix-like tools, so from this point everything is 
+going to be achieved with <font color=#93ffd7>commands</font>.
 
-<p>Where <em>-m32</em> is the compilation flag used to specify that we want gcc to compile our code for x86 architecture.</p>
+The simpliest way to open a binary with r2 is by just providing to r2 command the name 
+of our binary file without any other fuse (aka flag):
 
-<p>So we have now an x86 binary ready to be analyzed with r2.</p>
 
-<h2 id="opening-a-binary-with-radare2">Opening a binary with Radare2</h2>
+┌                             ┐
+│   <font color=#93ffd7>$</font> radare2 <file-name>                │
+└                             ┘
 
-<p>As mentioned before, r2 is a set of <em>Unix-like</em> tools, so from this point everything is going to be achieved with commands.</p>
 
-<p>The simpliest way to open a binary with r2 is by just providing to r2 command the name of our binary file without any other fuse (aka flag):</p>
+or
 
-<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="err">$</span> <span class="n">radare2</span> <span class="o">&lt;</span><span class="n">file</span><span class="o">-</span><span class="nb">name</span><span class="o">&gt;</span></code></pre></figure>
 
-<p>or</p>
+┌                             ┐
+│   <font color=#93ffd7>$</font> r2 <file-name>                     │
+└                             ┘
 
-<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="err">$</span> <span class="n">r2</span> <span class="o">&lt;</span><span class="n">file</span><span class="o">-</span><span class="nb">name</span><span class="o">&gt;</span></code></pre></figure>
 
-<p>By doing it this way, r2 is just going to open the binary file without performing any sort of analysis to it (more on this below).</p>
+By doing it this way, r2 is just going to open the binary file <font color=#93ffd7>without performing any 
+sort of analysis to it</font> (more on this below). 
 
-<p>To see the different fuses that r2 accepts when launching it, you can use the command:</p>
+To see the different fuses that r2 accepts when launching it, you can use the command:
 
-<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="err">$</span> <span class="n">r2</span> <span class="o">-</span><span class="n">h</span></code></pre></figure>
 
-<p>The fuse that we are going to be using the most when working with r2 is -A, that way the command to open our file is:</p>
+┌                             ┐
+│   <font color=#93ffd7>$</font> r2 -h                   │
+└                             ┘
 
-<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="err">$</span> <span class="n">r2</span> <span class="o">-</span><span class="no">A</span> <span class="p">.</span><span class="nf">/</span><span class="n">post</span><span class="o">-</span><span class="n">sample</span> </code></pre></figure>
 
-<p>When reading the help for the commands available, we see that for the fuse -A the help says that <em>“run aaa command to analyze all referenced code”</em>. This means that first it opens the binary with radare2 and then it runs the r2 command <em>aaa</em>.</p>
+The fuse that we are going to be using the most when working with r2 is -A, that way 
+the command to open our file is:
 
-<p>One of the outputs from running <em>aaa</em> command is the creation of flags (as radare2 call them). With aaa command, r2 goes through the provided binary and for everything that founds to be interesting creates a flag to reference it.</p>
 
-<p>For example, it creates flags for functions, variables, sections and so on. That’s the way r2 makes a ‘recognition’ of the binary and its properties.</p>
+┌                             ┐
+│   <font color=#93ffd7>$</font> r2 -A ./post-sample     │
+└                             ┘
 
-<p>It also gathers useful information about the binary in question, such as metadata associated with it, compilation information such as compilation flags used, compiler version, timestamps, binary size, sections, the system used for the creation of the binary, exploitation mitigations status, permissions and more.</p>
 
-<p>Notice that you can get the same result by opening the file without the -A flag and then run the <em>aaa</em> command manually once you are in r2.</p>
+When reading the help for the commands available, we see that for <font color=#93ffd7>the fuse -A</font> the help 
+says that <font color=#93ffd7>"run aaa command to analyze all referenced code"</font>. This means that first 
+it opens the binary with radare2 and then <font color=#93ffd7>it runs the r2 command aaa</font>.
 
-<p>Once we open our file, we get the following result:</p>
+One of the outputs from running <font color=#93ffd7>aaa command</font> is the creation of <font color=#93ffd7>flags</font> (as radare2 
+call them). With aaa command, r2 goes through the provided binary and for everything 
+that found interesting it creates a flag to reference it. 
 
-<p><img src="/assets/radare2-basic-wf/ss1.png" alt="r2 -A ./post-sample" /></p>
+For example, it creates flags for <font color=#93ffd7>functions, variables, sections and so on</font>. That's 
+the way r2 makes a 'recognition' of the binary and its properties.
 
-<p>The output that is displayed is the result of the option -A.</p>
+It also gathers useful information about the binary in question, such as <font color=#93ffd7>metadata 
+associated with it, compilation information such as compilation flags used, compiler 
+version, timestamps, binary size, sections, the system used for the creation of the 
+binary, exploitation mitigations status, permissions and more</font>. 
 
-<h2 id="radare2-modes-of-operation">Radare2 modes of operation</h2>
+Notice that you can get the same result by opening the file without the -A flag and 
+then run the aaa command manually once you are in r2.
 
-<p>In general terms, we could say that Radare2 has <strong>2 modes</strong> of operation:</p>
+Once we open our file, we get the following result:
 
-<ul>
-  <li>Command mode</li>
-  <li>Visual mode</li>
-</ul>
 
-<p><strong>Command mode:</strong> This is the default mode within r2. When in this mode, <strong>all</strong> r2 commands are available.</p>
 
-<p><strong>Visual mode:</strong> This mode provides a set of different capabilities in which you can see and interact with the binary and its information. As its name suggests, the information is outputed in a more visual and graphical way.</p>
+<img src="assets/radare2-basic-wf/ss1.png" alt="post-sample" width="950" height="560" align=center>
 
-<p>There are several differences of how each mode works, commands, options and so on, but <strong>the most important difference</strong> that you have to get in mind is that <strong>the available commands between modes differ in the total number of them and what they do.</strong> In command mode, all r2 commands are available whereas in visual mode, there are less commands available but, <strong>there are commands that perform a different thing between modes.</strong></p>
 
-<p>In other words, in visual mode you have a set of commands that are less than the ones available in command mode, some commands do the same in both modes, but there are commands that in visual mode do a total different thing.</p>
 
-<p>Understanding that and having it in mind will save you several mistakes and time :D</p>
+The output that is displayed is the result of the option -A.
 
-<p>We are going to start with command mode and then we’ll move to visual mode (which is the mode that I actually use the most).</p>
 
-<h2 id="working-in-command-mode">Working in command mode</h2>
 
-<p>Once we open our binary, the default mode is the command mode. You can see that an hex number appears in the r2 promt, that hex number (which varies between platforms such as Windows, Linux, etc) is our current location (address location) within the binary, also known as our current <em>seek</em>.</p>
+<h3><font color=#93ffd7>Radare2 modes of operation.</font></h3>
+In general terms, we could say that Radare2 has <font color=#93ffd7>2 modes of operation</font>:
 
-<p><strong>Displaying information</strong></p>
+    * Command mode
+    * Visual mode
 
-<p>As our binary has been already analyzed, the <strong><em>-i command-</em></strong> displays a bunch of information collected during r2 analysis.</p>
+<font color=#93ffd7>Command mode:</font> This is the default mode within r2. When in this mode, <font color=#93ffd7>all r2 commands 
+are available</font>.
 
-<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="p">[</span><span class="mh">0x08049050</span><span class="p">]</span><span class="o">&gt;</span> <span class="n">i</span></code></pre></figure>
+<font color=#93ffd7>Visual mode:</font> This mode provides a set of different capabilities in which you can see 
+and interact with the binary and its information. As its name suggests, the 
+information is outputed in a more <font color=#93ffd7>visual and graphical way</font>.
 
-<p>You can clear the screen with the command, well, <strong><em>-clear-</em></strong>:</p>
+There are several differences of how each mode works, commands, options and so on, 
+but the most important difference that you have to get in mind is that <font color=#93ffd7>the available 
+commands between modes differ in the total number of them and what they do</font>. 
+In command mode, all r2 commands are available whereas in visual mode, there are less 
+commands available but, <font color=#93ffd7>there are commands that perform a different thing between 
+modes</font>.
 
-<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="p">[</span><span class="mh">0x08049050</span><span class="p">]</span><span class="o">&gt;</span> <span class="n">clear</span></code></pre></figure>
+In other words, in visual mode you have a set of commands that are less than the 
+ones available in command mode, <font color=#93ffd7>some commands do the same in both modes, but there 
+are commands that in visual mode do a total different thing</font>.
 
-<p><strong>List functions</strong></p>
+Understanding that and having it in mind will save you several errors and time :D
 
-<p>One very useful command is the <strong><em>-afl command-</em></strong>. It’s used to list all functions that r2 found in the binary:</p>
+We are going to start with command mode and then we'll move to visual mode (which is 
+the mode that I actually use the most).
 
-<p><img src="/assets/radare2-basic-wf/afl-command.png" alt="afl command" /></p>
 
-<p>You can see the functions of our program referenced as <em>sym.sum</em>, <em>sym.mul</em> and <em>main</em>. Those are the flags mentioned before, it’s a kind of tag created by r2 and used to reference useful properties found in the binary.</p>
 
-<p>This information wouldn’t be available if we do not perform the analysis either by opening the file with the -A option or by running the <em>aaa</em> command in radare2.</p>
+<h3><font color=#93ffd7>Working in command mode</font></h3>
+Once we open our binary, <font color=#93ffd7>the default mode is the command mode</font>. You can see that an 
+hex number appears in the r2 promt, that hex number (which varies between platforms 
+such as Windows, Linux, etc) is our current location (address location) within the 
+binary, also known as our current <font color=#93ffd7>seek</font>.
 
-<p>Another nice way to list all the functions with a bit more of information presented like a table is by using the <strong><em>-afll command.-</em></strong></p>
 
-<p><img src="/assets/radare2-basic-wf/afll-command.png" alt="afll command" /></p>
+<h4><font color=#93ffd7>Displaying information</font></h4>
+As our binary has been already analyzed, the <font color=#93ffd7>-i command-</font> displays a bunch of 
+information collected during r2 analysis.
 
-<p><strong>Printing the disassembled binary</strong></p>
 
-<p>One of the main functionalities used in r2 is the disassembler. There are different ways to display the disassembled code in r2, the simpliest one is just using the <strong><em>-pd command-</em></strong>, which stands for <em>print disassembly</em>.</p>
+┌                             ┐
+│   <font color=#93ffd7>[</font>0<font color=#93ffd7>x</font>08049050<font color=#93ffd7>]</font>> i           │
+└                             ┘
 
-<p><img src="/assets/radare2-basic-wf/pd-command.png" alt="pd command" /></p>
 
-<p>The <em>pd</em> command prints the disassembled code of the <strong>current</strong> location. You can see that it displays just a part of all the disassembly code, that is because of the block size.</p>
+You can clear the screen with the command, well, ***-clear-***:
 
-<p>The default value of the block size is 0x100 and can be set with the <strong><em>-b command-</em></strong>.</p>
 
-<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="p">[</span><span class="mh">0x08049050</span><span class="p">]</span><span class="o">&gt;</span> <span class="n">b</span> <span class="o">&lt;</span><span class="n">new</span><span class="o">-</span><span class="n">size</span><span class="o">&gt;</span></code></pre></figure>
+┌                             ┐
+│   <font color=#93ffd7>[</font>0<font color=#93ffd7>x</font>08049050<font color=#93ffd7>]</font>> clear       │
+└                             ┘
 
-<p>You can print the disassembly code of all the content of a function regardless if it fits or not in the block size. To print a disassembled function you can use the command:</p>
 
-<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="p">[</span><span class="mh">0x08049050</span><span class="p">]</span><span class="o">&gt;</span> <span class="n">pdf</span> <span class="vi">@function</span><span class="o">-</span><span class="n">flag</span></code></pre></figure>
 
-<p>Where <em>function-flag</em> is the flag that r2 assign to our function (the ones we saw when listing the functions previously). Notice that <em>pdf</em> stands for <em>print disassembled function</em>.</p>
+<h4><font color=#93ffd7>List functions</font></h4>
+One very useful command is the <font color=#93ffd7>-afl command-</font>. It's used to list all functions 
+that r2 found in the binary: 
 
-<p>That way, in order to print the disassembled code of <em>main</em>, we run:</p>
 
-<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="p">[</span><span class="mh">0x08049050</span><span class="p">]</span><span class="o">&gt;</span> <span class="n">pdf</span> <span class="vi">@main</span> </code></pre></figure>
 
-<p><img src="/assets/radare2-basic-wf/pdf-main-command.png" alt="pdf main" /></p>
+<img src="assets/radare2-basic-wf/afl-command.png" alt="afl command" width="950" height="560" align=center>
 
-<p>The same way, we can print the content of <em>sym.mul</em> and <em>sym.sum</em>:</p>
 
-<p><img src="/assets/radare2-basic-wf/pdf-fun-command.png" alt="pdf fun" /></p>
 
-<h2 id="getting-help-the--command">Getting help.! The ? command</h2>
 
-<p>If I want you to remember something about this post is this: when in doubt, use the <strong><em>-? command-</em></strong>.</p>
+You can see the functions of our program referenced as <font color=#93ffd7>sym.sum, sym.mul and main</font>. 
+Those are the flags mentioned before, it's a kind of tag created by r2 and used to 
+reference useful properties found in the binary.
 
-<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="p">[</span><span class="mh">0x08049050</span><span class="p">]</span><span class="o">&gt;</span> <span class="p">?</span></code></pre></figure>
+This information wouldn't be available if we do not perform the analysis either by 
+opening the file with the -A option or by running the aaa command in radare2.
 
-<p>It diplays help for r2 commands. But it goes further, you will see that there are commands composed of more than one character, such as pdf, and talking about pdf, we saw that pd does print disassembly and pdf does it as well but of a function. Those two commands belong to the print disassembly commands.</p>
+Another nice way to list all the functions with a bit more of information presented 
+like a table is by using the <font color=#93ffd7>-afll command-</font>.
 
-<p>Like pd and pdf, there are other commands that kind of belong to a “category” of commands, like debugging commands, register commands, print mode commands and so on. And all of them look similar within their categories.</p>
 
-<p>Let’s say you want more info about print disassembly commands, you can get such information by running:</p>
 
-<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="p">[</span><span class="mh">0x08049050</span><span class="p">]</span><span class="o">&gt;</span> <span class="n">pd?</span></code></pre></figure>
+<img src="assets/radare2-basic-wf/afll-command.png" alt="afll command" width="950" height="560" align=center>
 
-<p><img src="/assets/radare2-basic-wf/pd-help-command.png" alt="pd ?" /></p>
 
-<p>Following that logic, you can get help not only on a specific command, but about a “category” of commands.</p>
 
-<p>There are a lot of other commands within the command mode. We are going to go through some of them but they happen to be more useful when they are used in visual mode so, we are going to see them <strong>in the second part</strong> of this posts.</p>
 
-<p>Anyway, with the information at this point, you should be able to play around with commands, getting help about them and experiment to see what they do.</p>
+<h4><font color=#93ffd7>Printing the disassembled binary.</font></h4>
+One of the main functionalities used in r2 is the disassembler. There are different 
+ways to display the disassembled code in r2, the simpliest one is just using the 
+<font color=#93ffd7>-pd command-</font>, which stands for <font color=#93ffd7>print disassembly</font>. 
 
-<h2 id="references">References.</h2>
 
-<ul>
-  <li><a href="https://radare.gitbooks.io/radare2book/content/">Radare2 Official Book</a></li>
-  <li><a href="https://github.com/rizinorg/cutter">Cutter GitHub Repository</a></li>
-  <li><a href="https://github.com/rizinorg/rizin">Rizin GitHub Repository</a></li>
-</ul>
 
+<img src="assets/radare2-basic-wf/pd-command.png" alt="pd command" width="950" height="560" align=center>
 
-<ul class="taxonomy__index">
-  
-  
-    <li>
-      <a href="#2021">
-        <strong>2021</strong> <span class="taxonomy__count">3</span>
-      </a>
-    </li>
-  
-</ul>
 
 
 
+The<font color=#93ffd7>-pd command-</font> prints the disassembled code of the <font color=#93ffd7>current location</font>. You can 
+see that it displays just a part of all the disassembly code, that is because of 
+the <font color=#93ffd7>block size</font>.
 
-  <section id="2021" class="taxonomy__section">
-    <h2 class="archive__subtitle">2021</h2>
-    <div class="entries-list">
-      
-        
+The default value of the block size is <font color=#93ffd7>0x100</font> and can be set with the <font color=#93ffd7>-b command-</font>.
 
 
+┌                             ┐
+│   <font color=#93ffd7>[</font>0<font color=#93ffd7>x</font>08049050<font color=#93ffd7>]</font>> b new-size  │
+└                             ┘
 
-<div class="list__item">
-  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-    
-    <h2 class="archive__item-title no_toc" itemprop="headline">
-      
-        <a href="/x86arch-part1-intro-101" rel="permalink">x86 Architecture: Architecture 101
-</a>
-      
-    </h2>
-    
 
-  <p class="page__meta">
-    
-      
-      <span class="page__meta-date">
-        <i class="far fa-calendar-alt" aria-hidden="true"></i>
-        <time datetime="2021-04-02T15:45:00-06:00">April 2, 2021</time>
-      </span>
-    
+You can print the disassembly code of all the content of a function regardless if 
+it fits or not in the block size. <font color=#93ffd7>To print a disassembled function</font> you can use the 
+command:
 
-    <span class="page__meta-sep"></span>
 
-    
-      
-      
+┌                                     ┐
+│   <font color=#93ffd7>[</font>0<font color=#93ffd7>x</font>08049050<font color=#93ffd7>]</font>> pdf @function-flag  │
+└                                     ┘
 
-      <span class="page__meta-readtime">
-        <i class="far fa-clock" aria-hidden="true"></i>
-        
-          14 minute read
-        
-      </span>
-    
-  </p>
 
+Where <font color=#93ffd7>function-flag</font> is the flag that r2 assign to our function (the ones we saw 
+when listing the functions previously). Notice that <font color=#93ffd7>pdf stands for print disassembled 
+function</font>.
 
-    <p class="archive__item-excerpt" itemprop="description">Welcome to this new series of posts, this time we’ll be talking about x86-64 computer architecture, specifically, on the firsts posts, I’ll give a very very ...</p>
-  </article>
-</div>
+That way, in order to print the disassembled code of main, we run:
 
-      
-        
 
+┌                                     ┐
+│   <font color=#93ffd7>[</font>0<font color=#93ffd7>x</font>08049050<font color=#93ffd7>]</font>> pdf @main           │
+└                                     ┘
 
 
-<div class="list__item">
-  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-    
-    <h2 class="archive__item-title no_toc" itemprop="headline">
-      
-        <a href="/radare2-basic-workflow-and-usage-part2" rel="permalink">Radare2: Basic workflow and usage - Part 2
-</a>
-      
-    </h2>
-    
 
-  <p class="page__meta">
-    
-      
-      <span class="page__meta-date">
-        <i class="far fa-calendar-alt" aria-hidden="true"></i>
-        <time datetime="2021-03-08T15:45:00-06:00">March 8, 2021</time>
-      </span>
-    
+<img src="assets/radare2-basic-wf/pdf-main-command.png" alt="pdf main command" width="950" height="560" align=center>
 
-    <span class="page__meta-sep"></span>
 
-    
-      
-      
 
-      <span class="page__meta-readtime">
-        <i class="far fa-clock" aria-hidden="true"></i>
-        
-          9 minute read
-        
-      </span>
-    
-  </p>
 
+The same way, we can print the content of sym.mul and sym.sum:
 
-    <p class="archive__item-excerpt" itemprop="description">This is the second post out of two that describes the usage of Radare2 to perform basic tasks that relate to binary analysis. In the previous post a brief in...</p>
-  </article>
-</div>
 
-      
-        
 
+<img src="assets/radare2-basic-wf/pdf-fun-command.png" alt="pdf fun command" width="950" height="560" align=center>
 
 
-<div class="list__item">
-  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-    
-    <h2 class="archive__item-title no_toc" itemprop="headline">
-      
-        <a href="/radare2-basic-workflow-and-usage" rel="permalink">Radare2: Basic workflow and usage - Part 1
-</a>
-      
-    </h2>
-    
 
-  <p class="page__meta">
-    
-      
-      <span class="page__meta-date">
-        <i class="far fa-calendar-alt" aria-hidden="true"></i>
-        <time datetime="2021-02-22T15:45:00-06:00">February 22, 2021</time>
-      </span>
-    
 
-    <span class="page__meta-sep"></span>
+<h3><font color=#93ffd7>Getting help.! The ? command.</font></h3>
+If I want you to remember something about this post is this: <font color=#93ffd7>when in doubt, use the
+-? command-</font>.
 
-    
-      
-      
 
-      <span class="page__meta-readtime">
-        <i class="far fa-clock" aria-hidden="true"></i>
-        
-          7 minute read
-        
-      </span>
-    
-  </p>
+┌                       ┐
+│   <font color=#93ffd7>[</font>0<font color=#93ffd7>x</font>08049050<font color=#93ffd7>]</font>> ?     │
+└                       ┘
 
 
-    <p class="archive__item-excerpt" itemprop="description">This is the first post out of two that describes the usage of Radare2 to perform basic tasks that relate to binary analysis. That way, instead of explaining ...</p>
-  </article>
-</div>
+<font color=#93ffd7>It diplays help for r2 commands</font>. But it goes further, you will see that there are 
+commands composed of more than one character, such as pdf, and talking about pdf, 
+we saw that pd does print disassembly and pdf does it as well but of a function. 
+Those two commands belong to the print disassembly commands.
 
-      
-    </div>
-    <a href="#page-title" class="back-to-top">Back to Top &uarr;</a>
-  </section>
+Like pd and pdf, there are other commands that kind of belong to a <font color=#93ffd7>"category" of 
+commands</font>, like debugging commands, register commands, print mode commands and so on. 
+And all of them look similar within their categories.
 
+Let's say you want more info about print disassembly commands, you can get such 
+information by running:
 
-  </div>
-</div>
-    </div>
 
-    
-      <div class="search-content">
-        <div class="search-content__inner-wrap"><form class="search-content__form" onkeydown="return event.key != 'Enter';">
-    <label class="sr-only" for="search">
-      Enter your search term...
-    </label>
-    <input type="search" id="search" class="search-input" tabindex="-1" placeholder="Enter your search term..." />
-  </form>
-  <div id="results" class="results"></div></div>
+┌                       ┐
+│   <font color=#93ffd7>[</font>0<font color=#93ffd7>x</font>08049050<font color=#93ffd7>]</font>> pd?   │
+└                       ┘
 
-      </div>
-    
 
-    <div id="footer" class="page__footer">
-      <footer>
-        <!-- start custom footer snippets -->
 
-<!-- end custom footer snippets -->
-        <div class="page__footer-follow">
-  <ul class="social-icons">
-    
+<img src="assets/radare2-basic-wf/pd-help-command.png" alt="pdf help command" width="950" height="560" align=center>
 
-    
 
-    
-  </ul>
-</div>
 
-<div class="page__footer-copyright">&copy; 2021 RodWaRE. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
 
-      </footer>
-    </div>
+Following that logic, you can get help not only on a specific command, but about a 
+"category" of commands.
 
-    
-  <script src="/assets/js/main.min.js"></script>
+There are a lot of other commands within the command mode. We are going to go 
+through some of them but they happen to be more useful when they are used in visual 
+mode so, we are going to see them <font color=#93ffd7>in the second part</font> of this posts.
 
+Anyway, with the information at this point, you should be able to play around with 
+commands, getting help about them and experiment to see what they do.
 
 
 
-<script src="/assets/js/lunr/lunr.min.js"></script>
-<script src="/assets/js/lunr/lunr-store.js"></script>
-<script src="/assets/js/lunr/lunr-en.js"></script>
+<h3><font color=#93ffd7>References.</font></h3>
+    <a href=https://radare.gitbooks.io/radare2book/content/>[Radare2 Official Book.]</a>
+    <a href=https://github.com/rizinorg/cutter>[Cutter Github Repository.]</a>
+    <a href=https://github.com/rizinorg/rizin>[Rizin Github Repository.]</a>
 
 
 
+</pre></div></center></body></html>
 
-
-
-
-  </body>
-</html>

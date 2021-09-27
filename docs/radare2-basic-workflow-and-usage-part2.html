@@ -1,675 +1,531 @@
-<!doctype html>
-<!--
-  Minimal Mistakes Jekyll Theme 4.22.0 by Michael Rose
-  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
-  Free for personal and commercial use under the MIT license
-  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
--->
-<html lang="en" class="no-js">
-  <head>
-    <meta charset="utf-8">
+<html>
+<head>
+<title>Radare2. P1</title>
+<meta charset="utf-8">
 
-<!-- begin _includes/seo.html --><title>Radare2: Basic workflow and usage - Part 2 - RodWaRE</title>
-<meta name="description" content="This is the second post out of two that describes the usage of Radare2 to perform basic tasks that relate to binary analysis. In the previous post a brief introduction to r2 was given, as well as a basic workflow working on command mode within r2.">
+<body>
+<center><div style="display: inline-block; text-align: left;"><pre><font color=#93ffd7>
 
 
-  <meta name="author" content="Rodo Gómez">
-  
-  <meta property="article:author" content="Rodo Gómez">
-  
+ ███████████                 █████                               ████████     ███████████   █████     ████████    
+░░███░░░░░███               ░░███                               ███░░░░███   ░░███░░░░░███ ░░███     ███░░░░███   
+ ░███    ░███   ██████    ███████   ██████   ████████   ██████ ░░░    ░███    ░███    ░███ ███████  ░░░    ░███   
+ ░██████████   ░░░░░███  ███░░███  ░░░░░███ ░░███░░███ ███░░███   ███████     ░██████████ ░░░███░      ███████    
+ ░███░░░░░███   ███████ ░███ ░███   ███████  ░███ ░░░ ░███████   ███░░░░      ░███░░░░░░    ░███      ███░░░░     
+ ░███    ░███  ███░░███ ░███ ░███  ███░░███  ░███     ░███░░░   ███      █    ░███          ░███ ███ ███      █   
+ █████   █████░░████████░░████████░░████████ █████    ░░██████ ░██████████    █████         ░░█████ ░██████████ ██
+░░░░░   ░░░░░  ░░░░░░░░  ░░░░░░░░  ░░░░░░░░ ░░░░░      ░░░░░░  ░░░░░░░░░░    ░░░░░           ░░░░░  ░░░░░░░░░░ ░░ 
+                                                                                                                  
+                                                                                                      
+</pre></div></center></body></font>
 
 
-<meta property="og:type" content="article">
-<meta property="og:locale" content="en_US">
-<meta property="og:site_name" content="RodWaRE">
-<meta property="og:title" content="Radare2: Basic workflow and usage - Part 2">
-<meta property="og:url" content="http://localhost:4000/radare2-basic-workflow-and-usage-part2">
-
-
-  <meta property="og:description" content="This is the second post out of two that describes the usage of Radare2 to perform basic tasks that relate to binary analysis. In the previous post a brief introduction to r2 was given, as well as a basic workflow working on command mode within r2.">
-
-
-
-
-
-
-
-  <meta property="article:published_time" content="2021-03-08T15:45:00-06:00">
-
-
-
-
-
-
-<link rel="canonical" href="http://localhost:4000/radare2-basic-workflow-and-usage-part2">
-
-
-
-
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    
-      "@type": "Person",
-      "name": null,
-      "url": "http://localhost:4000/"
-    
-  }
-</script>
-
-
-
-
-
-
-<!-- end _includes/seo.html -->
-
-
-
-
-<!-- https://t.co/dKP3o1e -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<script>
-  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
-</script>
-
-<!-- For all browsers -->
-<link rel="stylesheet" href="/assets/css/main.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
-
-<!--[if IE]>
-  <style>
-    /* old IE unsupported flexbox fixes */
-    .greedy-nav .site-title {
-      padding-right: 3em;
+<style>
+    body {
+      color: #FEFEFE;
+      background-color: #0c0d10;
+      margin: 0 auto;
+      padding: 1em 0 1em 0;
     }
-    .greedy-nav button {
-      position: absolute;
-      top: 0;
-      right: 0;
-      height: 100%;
-    }
-  </style>
-<![endif]-->
+       pre { font-family: "gohu", "Lucida Console", monospace, Monaco; font-size: 18px; line-height: 1.15; }
+         a { color: #93ffd7; text-decoration: none; }
+</style>
+</head>
 
+<body>
+<center><div style="display: inline-block; text-align: left;"><pre>
 
-    <!-- start custom head snippets -->
+This is the second post out of two that describes the usage of Radare2 to perform basic 
+tasks that relate to binary analysis. In the <a href=https://github.com/rizinorg/cutter><u>previous post</u></a> a brief introduction to r2
+was given, as well as a basic workflow working on command mode within r2. 
 
-<!-- insert favicons. use https://realfavicongenerator.net/ -->
-
-<!-- end custom head snippets -->
-
-  </head>
-
-  <body class="layout--posts">
-    <nav class="skip-links">
-  <h2 class="screen-reader-text">Skip links</h2>
-  <ul>
-    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
-    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
-    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
-  </ul>
-</nav>
-
-    <!--[if lt IE 9]>
-<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
-<![endif]-->
-
-    
-
-<div class="masthead">
-  <div class="masthead__inner-wrap">
-    <div class="masthead__menu">
-      <nav id="site-nav" class="greedy-nav">
-        
-        <a class="site-title" href="/">
-          RodWaRE
-          
-        </a>
-        <ul class="visible-links"><li class="masthead__menu-item">
-              <a href="/about">About</a>
-            </li></ul>
-        
-        <button class="search__toggle" type="button">
-          <span class="visually-hidden">Toggle search</span>
-          <svg class="icon" width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15.99 16">
-            <path d="M15.5,13.12L13.19,10.8a1.69,1.69,0,0,0-1.28-.55l-0.06-.06A6.5,6.5,0,0,0,5.77,0,6.5,6.5,0,0,0,2.46,11.59a6.47,6.47,0,0,0,7.74.26l0.05,0.05a1.65,1.65,0,0,0,.5,1.24l2.38,2.38A1.68,1.68,0,0,0,15.5,13.12ZM6.4,2A4.41,4.41,0,1,1,2,6.4,4.43,4.43,0,0,1,6.4,2Z" transform="translate(-.01)"></path>
-          </svg>
-        </button>
-        
-        <button class="greedy-nav__toggle hidden" type="button">
-          <span class="visually-hidden">Toggle menu</span>
-          <div class="navicon"></div>
-        </button>
-        <ul class="hidden-links hidden"></ul>
-      </nav>
-    </div>
-  </div>
-</div>
-
-
-    <div class="initial-content">
-      
+In this post, we'll explore how to perform a basic analysis, operations and exploration 
+of a binary working on <font color=#93ffd7>Visual Mode</font> within r2.
 
 
 
-<div id="main" role="main">
-  
+<h3><font color=#93ffd7>Let's recap: r2 modes of operation.</font></h3>
+As mentioned in the previous post, Radare2 has two modes of operation:
+
+    * Command Mode.
+    * Visual Mode.
+
+Command mode is the default mode, here, <font color=#93ffd7>all r2 commands are available</font>.
+
+Visual mode provides a set of different commands and this mode outputs the information 
+in a graphical way, same that is actually an interactive interface.
+
+One of the most important things you have to remember is that there are commands that 
+perform the same action in both modes, but there are commands that, even when they 
+look the same, perform a total different thing between modes.
+
+Finally, remember that, when in doubt, you can always use the <font color=#93ffd7>-? command-</font>.
 
 
-  <div class="archive">
-    
-      <h1 id="page-title" class="page__title">Radare2: Basic workflow and usage - Part 2</h1>
-    
-    <p>This is the second post out of two that describes the usage of Radare2 to perform basic tasks that relate to binary analysis. In the <a href="https://rodogomez.github.io/radare2-basic-workflow-and-usage">previous post</a> a brief introduction to r2 was given, as well as a basic workflow working on command mode within r2.</p>
 
-<p>In this post, we’ll explore how to perform a basic analysis, operations and exploration of a binary working on <strong>Visual Mode</strong> within r2.</p>
+<h3><font color=#93ffd7>Before we jump into it:</font></h3>
+For this series of posts, we are going to use the following simple C program:
 
-<h2 id="lets-recap-r2-modes-of-operation">Let’s recap: r2 modes of operation.</h2>
+┌
+│
+│    int sum(int x, int y){
+│        return x + y;
+│    }
+│
+│    int mul(int x, int y){
+│        return x * y;
+│    }
+│     
+│    int main(){ 
+│        int a = 10, b = 5, c = 0, d = 0;
+│        c = sum(a ,b);
+│        d = mul(a, b);
+│
+│        if(c < d)
+│            return c;
+│        else
+│            return d;
+│     
+│        return 0xdefea7;
+│    }
+│
+└
 
-<p>As mentioned in the previous post, Radare2 has two modes of operation:</p>
+<font color=#93ffd7>NOTE:</font> In this series of posts we will be working with x86 binaries under the Linux OS so,
+the code above was compiled with the following command:
 
-<ul>
-  <li>Command Mode.</li>
-  <li>Visual Mode.</li>
-</ul>
 
-<p>Command mode is the default mode, here, <strong>all r2 commands are available</strong>.</p>
+┌                                             ┐
+│   <font color=#93ffd7>$</font> gcc -m32 -o post-sample post-sample.c   │
+└                                             ┘
 
-<p>Visual mode provides a set of different commands and this mode outputs the information in a graphical way, same that is actually an interactive interface.</p>
 
-<p>One of the most important things you have to remember is that there are commands that perform the same action in both modes, but there are commands that, even when they look the same, perform a total different thing between modes.</p>
+Where <font color=#93ffd7>-m32</font> is the compilation flag used to specify that we want gcc to compile our code 
+for <font color=#93ffd7>x86 architecture (32 bits)</font>.
 
-<p>Finally, remember that, when in doubt, you can always use the <strong><em>-? command-</em></strong>.</p>
+So we have now an x86 binary ready to be analyzed with r2.
 
-<h2 id="before-we-jump-into-it">Before we jump into it:</h2>
 
-<p>For this post, we’ll be using the same C program we used in the part 1:</p>
 
-<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">int</span> <span class="n">sum</span><span class="p">(</span><span class="n">int</span> <span class="n">x</span><span class="p">,</span> <span class="n">int</span> <span class="n">y</span><span class="p">){</span>
-    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">;</span>
-<span class="p">}</span>
+<h3><font color=#93ffd7>Opening a binary with Radare2</font></h3>
+Let's begin by opening our binary and run r2 analysis at once:
 
-<span class="n">int</span> <span class="n">mul</span><span class="p">(</span><span class="n">int</span> <span class="n">x</span><span class="p">,</span> <span class="n">int</span> <span class="n">y</span><span class="p">){</span>
-    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span><span class="p">;</span>
-<span class="p">}</span>
+
+┌                             ┐
+│   <font color=#93ffd7>$</font> r2 -A ./post-sample     │
+└                             ┘
+
+
+Remember that the fuse -A makes r2 to run an analysis of the binary, creating flags and 
+gathering useful information about the binary.
+
+We should get the following result:
+
+
+
+<img src="assets/radare2-basic-wf/ss1.png" alt="post-sample" width="950" height="560" align=center>
+
+
+
+<h3><font color=#93ffd7>Working in Visual Mode.</font></h3>
+Visual mode provides, as its name suggests, <font color=#93ffd7>a more graphical way of displaying information</font>.
+In some way, visual mode provides a more user-friendly interface to work with when 
+analyzing binaries.
+
+Something important you have to remember is that in visual mode not all the r2 commands 
+are available, and there are commands that do a different thing in visual mode compared 
+with command mode.
+
+This mode does not provide only one interface to the user, instead, visual mode consists 
+of a set of <font color=#93ffd7>print modes</font>, also referred as <font color=#93ffd7>panels</font>.
+
+Something that is a little bit confusing at the beginning, and that is important that 
+you understand, is that such print modes <font color=#93ffd7>share some commands</font> (those commands do the same 
+regardless the print mode), but there are other commands that <font color=#93ffd7>does not do the same 
+action</font> and even, there are commands that are present in some print modes but aren't in 
+others.
+
+You can think of it as if each print mode was actually a kind of <font color=#93ffd7>sub-mode</font> within 
+visual mode.
+
+The different print modes available in visual mode are:
+
+<font color=#93ffd7>↻</font> Hexdump panel → Disassembly panel → Debugger panel → Hexadecimal words dump panel → 
+Hex-less hexdump panel → Op analysis color map panel → Annotated hexdump panel <font color=#93ffd7>↻</font>
+
+The arrows represent <font color=#93ffd7>the order of switching</font> between print modes.
+
+There is a special print mode, full of different functionalities and options, and it's 
+almost like if it was actually a third mode in r2, called <font color=#93ffd7>Panels view</font>, (which is 
+the print mode that I personally use the most) but officially it is another print mode 
+within visual mode, we'll explore this special print mode last.
+
+You can switch between print modes, but before explaining that, let's switch to Visual 
+mode first.
+
+
+
+<h3><font color=#93ffd7>Switching to visual mode.</font></h3>
+At this point, we are currently in command mode. In order to change to visual mode we 
+can use the <font color=#93ffd7>-V command-</font> (note the uppercase):
+
+
+┌                       ┐
+│   <font color=#93ffd7>[</font>0<font color=#93ffd7>x</font>08049050<font color=#93ffd7>]</font>> V     │
+└                       ┘
+
+
+
+<img src="assets/radare2-basic-wf/img1-Visual-mode-hex-dump.png" alt="Disassembly panel" width="950" height="560" align=center>
+
+
+
+Now we are in visual mode. The default print mode that you see once you enter in visual 
+mode is an hex dump view of the current seek. 
+
+You can switch to other print modes using either the <font color=#93ffd7>-p command-</font> or <font color=#93ffd7>-P 
+command-</font>:
+
+<h4><font color=#93ffd7>Disassembly panel:</font></h4>
+<img src="assets/radare2-basic-wf/img2-Visual-mode-disassembly-view.png" alt="Disassembly panel" width="950" height="560" align=center>
+
+
+
+<h4><font color=#93ffd7>Color map panel:</font></h4>
+<img src="assets/radare2-basic-wf/img3-color-map-panel.png" alt="Color map panel" width="950" height="560" align=center>
+
+
+By now, let's explore our workflow within the disassembly panel.
+
+
+
+<h3><font color=#93ffd7>Exploring the binary.</font></h3>
+At this point, our current seek is the very beginning of our binary code, we can move 
+around and explore the disassembled code using the <font color=#93ffd7>arrow keys or h, j, k, and l keys</font>, 
+same as the ones you use in the Vim text editor.
+
+Moving using such keys allows you to navigate the disassembled code but only one line 
+at a time. 
+
+You can go directly to specific locations, like a specific function or a specific part 
+of the binary if you know its location within the binary, by using the flag of such 
+function or binary location using the <font color=#93ffd7>_ command</font>. 
+
+Let's supose you want to go to the main function, just type <font color=#93ffd7>_</font> and a list of r2 flags 
+will be displayed:
+
+
+
+<img src="assets/radare2-basic-wf/img5-using_command-main.png" alt="_ command" width="950" height="560" align=center>
+
+
+
+Then just type <font color=#93ffd7>main</font> and press <font color=#93ffd7>ENTER</font>.
+
+Now our current seek is the location of main:
+
+
+
+<img src="assets/radare2-basic-wf/img6-using_command-main2.png" alt="_ command main" width="950" height="560" align=center>
+
+
+
+This way, the _ command is useful to <font color=#93ffd7>search for specific functions/locations</font> within our 
+binary.
+
+
+
+<h3><font color=#93ffd7>The view management.</font></h3>
+View management is a functionality that <font color=#93ffd7>is only available if you are NOT in Panels 
+view</font> (but it's available in all the other print modes).
+
+The view management provides a set of options and functionalities that can be applied 
+to the functions of our binary. 
+
+This functionality is accessed using the<font color=#93ffd7> -v command-</font>:
+
+
+
+<img src="assets/radare2-basic-wf/img7-View-management.png" alt="View management." width="950" height="560" align=center>
+
+
+
+As you can see, a list of all the functions of our binary is displayed and a preview 
+of the disassembled code of the selected function is showed as well.
+
+Using the <font color=#93ffd7>up</font> and <font color=#93ffd7>down arrow keys</font>, or <font color=#93ffd7>j</font> and <font color=#93ffd7>k</font> you can move between functions (see how 
+an <font color=#93ffd7>*</font> symbol works as a cursor when moving around between functions in the list).
  
-<span class="n">int</span> <span class="n">main</span><span class="p">(){</span> 
-    <span class="n">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="n">c</span> <span class="o">=</span> <span class="n">sum</span><span class="p">(</span><span class="n">a</span> <span class="p">,</span><span class="n">b</span><span class="p">);</span>
-    <span class="n">d</span> <span class="o">=</span> <span class="n">mul</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">);</span>
+Using the <font color=#93ffd7>right arrow key</font>, or <font color=#93ffd7>l key</font>, specific options (that applies to the current 
+selected function) are displayed that relates to actions like add, rename, type and 
+so on.
 
-    <span class="k">if</span><span class="p">(</span><span class="n">c</span> <span class="o">&lt;</span> <span class="n">d</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">c</span><span class="p">;</span>
-    <span class="k">else</span>
-        <span class="k">return</span> <span class="n">d</span><span class="p">;</span>
- 
-    <span class="k">return</span> <span class="mh">0xdefea7</span><span class="p">;</span>
-<span class="p">}</span></code></pre></figure>
+For a simple binary analysis, the options that I found useful the most are:
 
-<p><strong>NOTE:</strong> In this series of posts we will be working with x86 binaries under the Linux OS so, the code above was compiled with the following command:</p>
+    * Rename a function.
+    * The <font color=#93ffd7>calls</font> option.
 
-<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="err">$</span> <span class="n">gcc</span> <span class="o">-</span><span class="n">m32</span> <span class="o">-</span><span class="n">o</span> <span class="n">post</span><span class="o">-</span><span class="n">sample</span> <span class="n">post</span><span class="o">-</span><span class="n">sample</span><span class="p">.</span><span class="nf">c</span></code></pre></figure>
+In order to ilustrate this functionalities, let's rename our functions <font color=#93ffd7>sum</font> and <font color=#93ffd7>mul</font>. 
+Remember that r2 found them when it ran the analysis and assigned them a flag. That 
+way our functions are referenced by the flags <font color=#93ffd7>sym.sum</font> and<font color=#93ffd7> sym.mul</font>.
 
-<p>Where <em>-m32</em> is the compilation flag used to specify that we want gcc to compile our code for x86 architecture.</p>
+If we want to rename <font color=#93ffd7>sym.sum</font> function, we move the cursor selecting it, and press 
+<font color=#93ffd7>r</font>, after that we'll be asked to write the new name:
 
-<p>So we have now an x86 binary ready to be analyzed with r2.</p>
 
-<h2 id="opening-our-binary">Opening our binary.</h2>
 
-<p>Let’s begin by opening our binary and run r2 analysis at once:</p>
+<img src="assets/radare2-basic-wf/img8-View-management-renaming-a-function.png" alt="View management renaming." width="950" height="560" align=center>
 
-<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="err">$</span> <span class="n">r2</span> <span class="o">-</span><span class="no">A</span> <span class="p">.</span><span class="nf">/</span><span class="n">post</span><span class="o">-</span><span class="n">sample</span> </code></pre></figure>
 
-<p>Remember that the fuse -A makes r2 to run an analysis of the binary, creating flags and gathering useful information about the binary.</p>
 
-<p>We should get the following result:</p>
+Let's rename it as <font color=#93ffd7>sum</font> and then press<font color=#93ffd7> ENTER</font>.
 
-<p><img src="/assets/radare2-basic-wf/ss1.png" alt="r2 -A ./post-sample" /></p>
 
-<h2 id="working-in-visual-mode">Working in Visual Mode.</h2>
 
-<p>Visual mode provides, as its name suggests, a more graphical way of displaying information. In some way, visual mode provides a more user-friendly interface to work with when analyzing binaries.</p>
+<img src="assets/radare2-basic-wf/img9-Renaming-a-function-new-name.png" alt="View management renaming2." width="950" height="560" align=center>
 
-<p>Something important you have to remember is that in visual mode not all the r2 commands are available, and there are commands that do a different thing in visual mode compared with command mode.</p>
 
-<p>This mode does not provide only one interface to the user, instead, visual mode consists of a set of <strong><em>print modes</em></strong>, also referred as <strong><em>panels</em></strong>.</p>
 
-<p>Something that is a little bit confusing at the beginning, and that is important that you understand, is that such print modes share some commands (those commands do the same regardless the print mode), but there are other commands that does not do the same action and even, there are commands that are present in some print modes but aren’t in others.</p>
+And the same applies to <font color=#93ffd7>sym.mul</font>:
 
-<p>You can think of it as if each print mode was actually a kind of <em>sub-mode</em> within visual mode.</p>
 
-<p>The different print modes available in visual mode are:</p>
 
-<p>↻ Hexdump panel → Disassembly panel → Debugger panel → Hexadecimal words dump panel → Hex-less hexdump panel → Op analysis color map panel → Annotated hexdump panel ↻</p>
+<img src="assets/radare2-basic-wf/img10-Renaming-a-function-new-name2.png" alt="View management renaming3." width="950" height="560" align=center>
 
-<p>The arrows represent the order of switching between print modes.</p>
 
-<p>There is a special print mode, full of different functionalities and options, and it’s almost like if it was actually a third mode in r2, called <strong><em>Panels view</em></strong>, (which is the print mode that I personally use the most) but officially it is another print mode within visual mode, we’ll explore this special print mode last.</p>
 
-<p>You can switch between print modes, but before explaining that, let’s switch to Visual mode first.</p>
+In the other hand, the <font color=#93ffd7>calls</font> option provides very useful information about the 
+selected function, you can use this function just by typing <font color=#93ffd7>c</font>:
 
-<p><strong>Switching to visual mode</strong></p>
 
-<p>At this point, we are currently in command mode. In order to change to visual mode we can use the <strong><em>-V command-</em></strong> (note that is uppercase):</p>
 
-<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="p">[</span><span class="mh">0x08049050</span><span class="p">]</span><span class="o">&gt;</span> <span class="no">V</span></code></pre></figure>
+<img src="assets/radare2-basic-wf/img11-calls-functionality.png" alt="View management calls." width="950" height="560" align=center>
 
-<p><img src="/assets/radare2-basic-wf/img1-Visual-mode-hex-dump.png" alt="Visual mode hex dump view" /></p>
 
-<p>Now we are in visual mode. The default print mode that you see once you enter in visual mode is an <em><a href="https://en.wikipedia.org/wiki/Hex_dump">hex dump</a> view of the current seek</em>.</p>
 
-<p>You can switch to other print modes using either the <strong><em>-p command-</em></strong> or <strong><em>-P command-</em></strong>:</p>
+Some of the most useful information is:
 
-<p>Disassembly panel:</p>
+* <font color=#93ffd7>Call-convention</font>: Tells us the <font color=#93ffd7>calling convection</font> that the code is using, this is 
+important when reversing a binary.
 
-<p><img src="/assets/radare2-basic-wf/img2-Visual-mode-disassembly-view.png" alt="Visual mode disassembly view" /></p>
+* <font color=#93ffd7>locals</font>: Tells us how many <font color=#93ffd7>local variables are</font> in the function (NOTE: the number of 
+local variables may be different than the ones that were used in the source code, this 
+is because the generated assembly code from the compiler may create more or less local 
+variables depending on factors like optimizations at compile time.)
 
-<p>Color map panel</p>
+* <font color=#93ffd7>args</font>: Tells us how many arguments there are in the function signature.
 
-<p><img src="/assets/radare2-basic-wf/img3-color-map-panel.png" alt="Color map panel" /></p>
+Once you are done with the view management, you can exit from there by pressing 
+<font color=#93ffd7>q</font>.
 
-<p>By now, let’s explore our workflow within the disassembly panel.</p>
 
-<p><strong>Exploring the binary</strong></p>
+<h4><font color=#93ffd7>r2 commands within visual mode.</font></h4>
+As said before, when you are in visual mode, not all the r2 commands are available, 
+at least not directly. But such limitation is not that real. There is a way to 
+<font color=#93ffd7>execute all the commands that are available in command mode being in visual mode</font>.
 
-<p>At this point, our current seek is the very beginning of our binary code, we can move around and explore the disassembled code using the <em>arrow keys or h, j, k, and l keys</em>, same as the ones you use in the Vim text editor.</p>
+When in visual mode, <font color=#93ffd7>in any of the print modes</font>, you can get an "r2 terminal" to 
+execute command mode commands by pressing <font color=#93ffd7>:</font> (semicolon)
 
-<p>Moving using such keys allows you to navigate the disassembled code but only one line at a time.</p>
 
-<p>You can go directly to specific locations, like a specific function or a specific part of the binary if you know its location within the binary, by using the flag of such function or binary location using the <strong><em>_ command</em></strong>. Let’s supose you want to go to the main function, just type _ and a list of r2 flags will be displayed:</p>
 
-<p><img src="/assets/radare2-basic-wf/img5-using_command-main.png" alt="Using _ command" /></p>
+<img src="assets/radare2-basic-wf/img12-r2-commands-from-visual-mode.png" alt="r2 commands from visual mode." width="950" height="560" align=center>
 
-<p>Then just type <em>main</em> and press ENTER.</p>
 
-<p>Now our current seek is the location of main:</p>
 
-<p><img src="/assets/radare2-basic-wf/img6-using_command-main2.png" alt="Using _ command main2" /></p>
+As you can see, <font color=#93ffd7>a promt</font> is displayed. Here you can type and execute any of the commands
+that are present in command mode.
 
-<p>This way, the _ command is useful to search for specific functions/locations within our binary.</p>
+This is really useful because, as long as you use Radare2, you'll notice that you need 
+to hex dump an specific location in memory, or print the contents of some location 
+stored in a register and so on.
 
-<p><strong>The view management</strong></p>
+When you start running commands in this promt, you may notice that the interface suffer
+a <font color=#93ffd7>scrolling-up</font> and you lose your print mode, <font color=#93ffd7>don't worry.!</font>, once you are done with 
+your r2 commands, just <font color=#93ffd7>press ENTER</font> (without any command on the promt) and the print 
+mode is restored as it was before switching to the promt.
 
-<p>View management is a functionality that <strong>is only available if you are NOT in Panels view</strong> (but it’s available in all the other print modes).</p>
+At this point, you should be able to navigate the disassembled code of any binary, 
+rename functions, gather information, and explore more options in visual mode. But 
+that's not the end of this post, let's now explore my favorite print mode, let's 
+explore <font color=#93ffd7>Panels view</font>.
 
-<p>The view management provides a set of options and functionalities that can be applied to the functions of our binary.</p>
 
-<p>This functionality is accessed using the <strong><em>-v command-</em></strong>:</p>
 
-<p><img src="/assets/radare2-basic-wf/img7-View-management.png" alt="View management" /></p>
+<h3><font color=#93ffd7>Panels view.</font></h3>
+Panels view provides an interface with <font color=#93ffd7>splitted windows</font>, each window is called a <font color=#93ffd7>panel</font>,
+and each of those panels can show different print modes or different r2 command's 
+output at the same time.
 
-<p>As you can see, a list of all the functions of our binary is displayed and a preview of the disassembled code of the selected function is showed as well.</p>
+That way, you can have a main panel that shows the disassembled code, another one to 
+see the registers, another one to display the stack and so on.
 
-<p>Using the <em>up</em> and <em>down</em> arrow keys, or <em>j</em> and <em>k</em> you can move between functions (see how an * symbol works as a cursor when moving around between functions in the list).</p>
+There are basically 2 ways to switch to panels view, depending on your current r2 mode:
 
-<p>Using the <em>right</em> arrow key, or <em>l</em> key, specific options (that applies to the current selected function) are displayed that relates to actions like add, rename, type and so on.</p>
 
-<p>For a simple binary analysis, the options that I found useful the most are:</p>
+<h4><font color=#93ffd7>Switching from visual mode to panels view.</font></h4>
+To switch to panels view when you are currently in any print mode, within visual mode 
+of course, just use the <font color=#93ffd7>-! command-</font>.
 
-<ul>
-  <li>Rename a function.</li>
-  <li>The <em>calls</em> option.</li>
-</ul>
 
-<p>In order to ilustrate this functionalities, let’s rename our functions <em>sum</em> and <em>mul</em>. Remember that r2 found them when it ran the analysis and assigned them a flag. That way our functions are referenced by the flags <em>sym.sum</em> and <em>sym.mul</em>.</p>
 
-<p>If we want to rename <em>sym.sum</em> function, we move the cursor selecting it, and press <strong><em>r</em></strong>, after that we’ll be asked to write the new name:</p>
+<img src="assets/radare2-basic-wf/img13-panels-view-1.png" alt="panels view." width="950" height="560" align=center>
 
-<p><img src="/assets/radare2-basic-wf/img8-View-management-renaming-a-function.png" alt="View management renaming a function" /></p>
 
-<p>Let’s rename it as <em>sum</em> and then press ENTER.</p>
 
-<p><img src="/assets/radare2-basic-wf/img9-Renaming-a-function-new-name.png" alt="Renaming a function new name" /></p>
+<h4><font color=#93ffd7>Switching from command mode to panels view.</font></h4>
+To switch to panels view when you are currently in command mode, just use the <font color=#93ffd7>-v 
+command-</font>(Note the lower case).
 
-<p>And the same applies to <em>sym.mul</em>:</p>
 
-<p><img src="/assets/radare2-basic-wf/img10-Renaming-a-function-new-name2.png" alt="Renaming a function new name2" /></p>
 
-<p>In the other hand, the <em>calls</em> option provides very useful information about the selected function, you can use this function just by typing <strong><em>c</em></strong>:</p>
+<img src="assets/radare2-basic-wf/img13-panels-view-1.png" alt="Panels view." width="950" height="560" align=center>
 
-<p><img src="/assets/radare2-basic-wf/img11-calls-functionality.png" alt="calls functionality" /></p>
 
-<p>Some of the most useful information is:</p>
 
-<ul>
-  <li>Call-convention: Tells us the calling convection that the code is using, this is important when reversing a binary.</li>
-  <li>locals: Tells us how many local variables are in the function (NOTE: the number of local variables may be different than the ones that were used in the source code, this is because the generated assembly code from the compiler may create more or less local variables depending on factors like optimizations at compile time.)</li>
-  <li>args: Tells us how many arguments there are in the function signature.</li>
-</ul>
+That way, if you are in command mode, using the <font color=#93ffd7>-v command-</font> you switch to <font color=#93ffd7>panels view</font>, 
+whereas using the <font color=#93ffd7>-V command-</font> change to <font color=#93ffd7>visual mode</font>.
 
-<p>Once you are done with the view management, you can exit from there by pressing <strong><em>q</em></strong>.</p>
 
-<p><strong>r2 commands within visual mode</strong></p>
+<h4><font color=#93ffd7>Working in panels view.</font></h4>
+Panels view shares some functionalities with all the other print modes, but one that 
+<font color=#93ffd7>is not present is view management</font>, that way if you need something from view 
+management you'll need to switch to any other print mode.
 
-<p>As said before, when you are in visual mode, not all the r2 commands are available, at least not directly. But such limitation is not that real. There is a way to <strong>execute all the commands that are available in command mode being in visual mode</strong>.</p>
+If you need to execute r2 commands, you can do it the same way as in any other print 
+mode, by using the <font color=#93ffd7>-: command-</font>.
 
-<p>When in visual mode, <strong>in any of the print modes</strong>, you can get an “r2 terminal” to execute command mode commands by pressing <strong><em>:</em></strong> (semicolon)</p>
 
-<p><img src="/assets/radare2-basic-wf/img12-r2-commands-from-visual-mode.png" alt="r2 commands from visual mode" /></p>
 
-<p>As you can see, a promt is displayed. Here you can type and execute any of the commands that are present in command mode.</p>
+<img src="assets/radare2-basic-wf/img14-r2-commands-panel-view.png" alt="r2 commands from panels view." width="950" height="560" align=center>
 
-<p>This is really useful because, as long as you use Radare2, you’ll notice that you need to hex dump an specific location in memory, or print the contents of some location stored in a register and so on.</p>
 
-<p>When you start running commands in this promt, you may notice that the interface suffer a scrolling-up and you lose your print mode, <strong>don’t worry.!</strong>, once you are done with your r2 commands, just press ENTER (without any command on the promt) and the print mode is restored as it was before switching to the promt.</p>
 
-<p>At this point, you should be able to navigate the disassembled code of any binary, rename functions, gather information, and explore more options in visual mode. But that’s not the end of this post, let’s now explore my favorite print mode, let’s explore <strong>Panels view</strong>.</p>
+When I first ever launched this view, the default interface displayed 3 different 
+panels, the bigger one showed the disassembled code, and the other ones showed an 
+hex dum of the stack and the registers.
 
-<h2 id="panels-view">Panels view</h2>
+Being honest, at this point I'm not sure if those are the default panels, but don't 
+worry, we'll explore how to customize them.
 
-<p>Panels view provides an interface with splitted windows, each window is called a panel, and each of those panels can show different print modes or different r2 command’s output at the same time.</p>
+You can move between panels using the <font color=#93ffd7>TAB key</font>.
 
-<p>That way, you can have a main panel that shows the disassembled code, another one to see the registers, another one to display the stack and so on.</p>
+As you can see, there are some options at the top of the window, you can access 
+such options using the <font color=#93ffd7>-m command-</font>. You can explore the options available 
+moving with the <font color=#93ffd7>arrow keys</font> or <font color=#93ffd7>h, j, k and l</font>.
 
-<p>There are basically 2 ways to switch to panels view, depending on your current r2 mode:</p>
 
-<p><strong>Switching from visual mode to panels view</strong></p>
 
-<p>To switch to panels view when you are currently in any print mode, within visual mode of course, just use the <strong><em>-! command-</em></strong>.</p>
+<img src="assets/radare2-basic-wf/img15-m-command-windows.png" alt="m command windows." width="950" height="560" align=center>
 
-<p><img src="/assets/radare2-basic-wf/img13-panels-view-1.png" alt="panels view 1" /></p>
 
-<p><strong>Switching from command mode to panels view</strong></p>
 
-<p>To switch to panels view when you are currently in command mode, just use the <strong><em>-v command-</em></strong>(Note the lower case).</p>
+If you want to search and go to an specific function in the disassembled code, you 
+can do it the same way as in other print mode, using the <font color=#93ffd7>-_ command-</font>.
 
-<p><img src="/assets/radare2-basic-wf/img13-panels-view-1.png" alt="panels view 2" /></p>
 
-<p>That way, if you are in command mode, using the <strong><em>-v command-</em></strong> you switch to <strong>panels view</strong>, whereas using the <strong><em>-V command-</em></strong> change to <strong>visual mode</strong>.</p>
+<h4><font color=#93ffd7>Customizing the panels.</font></h4>
+Let's customize the two smaller panels. One way to achieve this is by moving to the 
+desired panel and press the <font color=#93ffd7>DEL key</font>:
 
-<p><strong>Working in Panels view</strong></p>
 
-<p>Panels view shares some functionalities with all the other print modes, but one that <strong>is not present is view management</strong>, that way if you need something from view management you’ll need to switch to any other print mode.</p>
 
-<p>If you need to execute r2 commands, you can do it the same way as in any other print mode, by using the <strong><em>-: command-</em></strong>.</p>
+<img src="assets/radare2-basic-wf/img16-customize-panel-1.png" alt="Customizing panel1." width="950" height="560" align=center>
 
-<p><img src="/assets/radare2-basic-wf/img14-r2-commands-panel-view.png" alt="r2 commands panel view" /></p>
 
-<p>When I first ever launched this view, the default interface displayed 3 different panels, the bigger one showed the disassembled code, and the other ones showed an hex dum of the stack and the registers.</p>
 
-<p>Being honest, at this point I’m not sure if those are the default panels, but don’t worry, we’ll explore how to customize them.</p>
+A menu is displayed with multiple predefined options, you can choose from them and 
+just press ENTER to make the selection.
 
-<p>You can move between panels using the <strong>TAB key</strong>.</p>
+All this predefined views use an specific fixed r2 command, same that is visible 
+at the top of each panel, but this is not the only way to customize the panels.
 
-<p>As you can see, there are some options at the top of the window, you can access such options using the <strong><em>-m command-</em></strong>. You can explore the options available moving with the <strong><em>arrow keys</em></strong> or <strong><em>h, j, k and l</em></strong>.</p>
+You can provide to any panel your <font color=#93ffd7>own custom r2 command</font> by using the <font color=#93ffd7>-e 
+command-</font>, just move to the desired panel and use the command:
 
-<p><img src="/assets/radare2-basic-wf/img15-m-command-windows.png" alt="m command windows" /></p>
 
-<p>If you want to search and go to an specific function in the disassembled code, you can do it the same way as in other print mode, using the <strong><em>-_ command-</em></strong>.</p>
 
-<p><strong>Customizing the panels</strong></p>
+<img src="assets/radare2-basic-wf/img17-customize-panel-2.png" alt="Customizing panel2." width="950" height="560" align=center>
 
-<p>Let’s customize the two smaller panels. One way to achieve this is by moving to the desired panel and press the <strong>DEL key</strong>:</p>
 
-<p><img src="/assets/radare2-basic-wf/img16-customize-panel-1.png" alt="customize panel 1" /></p>
 
-<p>A menu is displayed with multiple predefined options, you can choose from them and just press ENTER to make the selection.</p>
+At the top of the window, a promt will be displayed asking you to write your r2 
+command, that way, whatever the output of that command is, it will <font color=#93ffd7>be displayed in 
+the selected panel</font>.
 
-<p>All this predefined views use an specific fixed r2 command, same that is visible at the top of each panel, but this is not the only way to customize the panels.</p>
+I personally use those two panels to display the stack and the registers, respectively. 
 
-<p>You can provide to any panel your <strong>own custom r2 command</strong> by using the <strong><em>-e command-</em></strong>, just move to the desired panel and use the command:</p>
+The command I use to display the stack is:
 
-<p><img src="/assets/radare2-basic-wf/img17-customize-panel-2.png" alt="customize panel 2" /></p>
+┌                      ┐
+│   <font color=#93ffd7>pxW</font> @esp           │
+└                      ┘
 
-<p>At the top of the window, a promt will be displayed asking you to write your r2 command, that way, whatever the output of that command is, it will be displayed in the selected panel.</p>
 
-<p>I personally use those two panels to display the stack and the registers, respectively.</p>
+<font color=#93ffd7>px</font> belongs to the <font color=#93ffd7>print hexadecimal</font> commands. <font color=#93ffd7>W</font> specifies the size of the hex 
+dump and stands for <font color=#93ffd7>word</font> size. Notice that <font color=#93ffd7>in radare2 a word is 32 bits</font>. And <font color=#93ffd7>W</font> is 
+uppercase, which specifies that the output will be displayed one word per line.
 
-<p>The command I use to display the stack is:</p>
+And for the registers I just use the predefined one, using the <font color=#93ffd7>DEL key</font>.
 
-<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">pxW</span> <span class="vi">@esp</span></code></pre></figure>
 
-<p><em>px</em> belongs to the <em>print hexadecimal</em> commands. <em>W</em> specifies the size of the hex dump and stands for <em>word</em> size. Notice that in radare2 a word is 32 bits. And <em>W</em> is uppercase, which specifies that the output will be displayed one word per line.</p>
 
-<p>And for the registers I just use the predefined one, using the DEL key.</p>
+<img src="assets/radare2-basic-wf/img18-custom-panels.png" alt="Customizing panels." width="950" height="560" align=center>
 
-<p><img src="/assets/radare2-basic-wf/img18-custom-panels.png" alt="custom panels" /></p>
 
-<h2 id="bonus-graph-view">Bonus: Graph view</h2>
 
-<p>Graph view displays the disassembled code showing the branches (if any) and a call graph view as well.</p>
+<h3><font color=#93ffd7>Bonus: Graph view.</font></h3>
+Graph view displays the <font color=#93ffd7>disassembled code showing the branches (if any) and a call 
+graph view as well</font>.
 
-<p>When in visual mode, <strong>in any print mode</strong>, you can go to graph view using the <strong>SPACE key</strong>.</p>
+When in visual mode, <font color=#93ffd7>in any print mode</font>, you can go to graph view using the 
+<font color=#93ffd7>SPACE key</font>.
 
-<p><img src="/assets/radare2-basic-wf/img19-Graph-view.png" alt="Graph view" /></p>
 
-<p><img src="/assets/radare2-basic-wf/img20-Graph-view2.png" alt="Graph view2" /></p>
 
-<p>The displayed disassembled code depends on the current seek, if you are located at main in the binary, then the disassembled code will be from main.</p>
+<img src="assets/radare2-basic-wf/img19-Graph-view.png" alt="Graph view1." width="950" height="560" align=center>
 
-<p>You can move around the graph view using the <strong><em>arrow keys</em></strong> and <strong><em>h, j, k and l keys</em></strong>.</p>
 
-<p>This view helps you see in a more ilustrative interface the branches created by <em>if</em> statements, <em>switch cases</em> and other <em>conditional</em> and <em>non-conditional</em> jumps in code.</p>
 
-<h2 id="getting-help">Getting help</h2>
+<img src="assets/radare2-basic-wf/img20-Graph-view2.png" alt="Graph view2." width="950" height="560" align=center>
 
-<p>Regardless the current mode you are in, you can use the <strong><em>-? command</em></strong> to get help.</p>
 
-<h2 id="conclusions">Conclusions</h2>
 
-<p>Now you should be able to perform a basic binary analysis using both command mode and visual mode. From here, you can dedice which mode, or which print mode, is better for you.</p>
+The displayed disassembled code depends on the <font color=#93ffd7>current seek</font>, if you are located at 
+main in the binary, then the disassembled code will be from main.
 
-<p>Notice that knowing how to use tools for binary analysis, such as Radare2, is just useful if you have previous knowledge about concepts like assembly, computer architecture and even programming. In future posts, I’ll be exploring some stuff about those concepts that migth be helpful for everyone interested in this areas.</p>
+You can move around the graph view using the <font color=#93ffd7>arrow keys</font> and <font color=#93ffd7>h, j, k and l 
+keys</font>.
 
-<h2 id="references">References.</h2>
+This view helps you see in a more ilustrative interface the branches created by <font color=#93ffd7>if</font> 
+statements, <font color=#93ffd7>switch cases</font> and other <font color=#93ffd7>conditional</font> and <font color=#93ffd7>non-conditional</font> jumps in 
+code.
 
-<ul>
-  <li><a href="https://radare.gitbooks.io/radare2book/content/">Radare2 Official Book</a></li>
-</ul>
 
 
-<ul class="taxonomy__index">
-  
-  
-    <li>
-      <a href="#2021">
-        <strong>2021</strong> <span class="taxonomy__count">3</span>
-      </a>
-    </li>
-  
-</ul>
+<h3><font color=#93ffd7>Getting help.</font></h3>
+Regardless the current mode you are in, you can use the <font color=#93ffd7>-? command</font> to get help.
 
 
 
+<h3><font color=#93ffd7>Conclusions.</font></h3>
+Now you should be able to perform a <font color=#93ffd7>basic binary analysis using both command mode 
+and visual mode</font>. From here, you can dedice which mode, or which print mode, is 
+better for you. 
 
-  <section id="2021" class="taxonomy__section">
-    <h2 class="archive__subtitle">2021</h2>
-    <div class="entries-list">
-      
-        
+Notice that knowing how to use tools for binary analysis, such as Radare2, is just 
+useful if you have previous knowledge about concepts like <font color=#93ffd7>assembly, computer 
+architecture and even programming</font>. In future posts, I'll be exploring some stuff 
+about those concepts that migth be helpful for everyone interested in this areas.
 
 
 
-<div class="list__item">
-  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-    
-    <h2 class="archive__item-title no_toc" itemprop="headline">
-      
-        <a href="/x86arch-part1-intro-101" rel="permalink">x86 Architecture: Architecture 101
-</a>
-      
-    </h2>
-    
+<h3><font color=#93ffd7>References.</font></h3>
+    <a href=https://radare.gitbooks.io/radare2book/content/>[Radare2 Official Book.]</a>
+    <a href=https://github.com/rizinorg/cutter>[Cutter Github Repository.]</a>
+    <a href=https://github.com/rizinorg/rizin>[Rizin Github Repository.]</a>
 
-  <p class="page__meta">
-    
-      
-      <span class="page__meta-date">
-        <i class="far fa-calendar-alt" aria-hidden="true"></i>
-        <time datetime="2021-04-02T15:45:00-06:00">April 2, 2021</time>
-      </span>
-    
 
-    <span class="page__meta-sep"></span>
 
-    
-      
-      
+</pre></div></center></body></html>
 
-      <span class="page__meta-readtime">
-        <i class="far fa-clock" aria-hidden="true"></i>
-        
-          14 minute read
-        
-      </span>
-    
-  </p>
-
-
-    <p class="archive__item-excerpt" itemprop="description">Welcome to this new series of posts, this time we’ll be talking about x86-64 computer architecture, specifically, on the firsts posts, I’ll give a very very ...</p>
-  </article>
-</div>
-
-      
-        
-
-
-
-<div class="list__item">
-  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-    
-    <h2 class="archive__item-title no_toc" itemprop="headline">
-      
-        <a href="/radare2-basic-workflow-and-usage-part2" rel="permalink">Radare2: Basic workflow and usage - Part 2
-</a>
-      
-    </h2>
-    
-
-  <p class="page__meta">
-    
-      
-      <span class="page__meta-date">
-        <i class="far fa-calendar-alt" aria-hidden="true"></i>
-        <time datetime="2021-03-08T15:45:00-06:00">March 8, 2021</time>
-      </span>
-    
-
-    <span class="page__meta-sep"></span>
-
-    
-      
-      
-
-      <span class="page__meta-readtime">
-        <i class="far fa-clock" aria-hidden="true"></i>
-        
-          11 minute read
-        
-      </span>
-    
-  </p>
-
-
-    <p class="archive__item-excerpt" itemprop="description">This is the second post out of two that describes the usage of Radare2 to perform basic tasks that relate to binary analysis. In the previous post a brief in...</p>
-  </article>
-</div>
-
-      
-        
-
-
-
-<div class="list__item">
-  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-    
-    <h2 class="archive__item-title no_toc" itemprop="headline">
-      
-        <a href="/radare2-basic-workflow-and-usage" rel="permalink">Radare2: Basic workflow and usage - Part 1
-</a>
-      
-    </h2>
-    
-
-  <p class="page__meta">
-    
-      
-      <span class="page__meta-date">
-        <i class="far fa-calendar-alt" aria-hidden="true"></i>
-        <time datetime="2021-02-22T15:45:00-06:00">February 22, 2021</time>
-      </span>
-    
-
-    <span class="page__meta-sep"></span>
-
-    
-      
-      
-
-      <span class="page__meta-readtime">
-        <i class="far fa-clock" aria-hidden="true"></i>
-        
-          7 minute read
-        
-      </span>
-    
-  </p>
-
-
-    <p class="archive__item-excerpt" itemprop="description">This is the first post out of two that describes the usage of Radare2 to perform basic tasks that relate to binary analysis. That way, instead of explaining ...</p>
-  </article>
-</div>
-
-      
-    </div>
-    <a href="#page-title" class="back-to-top">Back to Top &uarr;</a>
-  </section>
-
-
-  </div>
-</div>
-    </div>
-
-    
-      <div class="search-content">
-        <div class="search-content__inner-wrap"><form class="search-content__form" onkeydown="return event.key != 'Enter';">
-    <label class="sr-only" for="search">
-      Enter your search term...
-    </label>
-    <input type="search" id="search" class="search-input" tabindex="-1" placeholder="Enter your search term..." />
-  </form>
-  <div id="results" class="results"></div></div>
-
-      </div>
-    
-
-    <div id="footer" class="page__footer">
-      <footer>
-        <!-- start custom footer snippets -->
-
-<!-- end custom footer snippets -->
-        <div class="page__footer-follow">
-  <ul class="social-icons">
-    
-
-    
-
-    
-  </ul>
-</div>
-
-<div class="page__footer-copyright">&copy; 2021 RodWaRE. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
-
-      </footer>
-    </div>
-
-    
-  <script src="/assets/js/main.min.js"></script>
-
-
-
-
-<script src="/assets/js/lunr/lunr.min.js"></script>
-<script src="/assets/js/lunr/lunr-store.js"></script>
-<script src="/assets/js/lunr/lunr-en.js"></script>
-
-
-
-
-
-
-
-  </body>
-</html>

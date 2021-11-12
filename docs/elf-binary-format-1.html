@@ -1,0 +1,855 @@
+<html>
+<head>
+<title>The ELF format.</title>
+<meta charset="utf-8">
+
+<body>
+<center><div style="display: inline-block; text-align: left;"><pre><font color=#93ffd7>
+
+ _______ _              _______ _       _______ 
+(_______) |            (_______|_)     (_______)
+    _   | |__  _____    _____   _       _____   
+   | |  |  _ \| ___ |  |  ___) | |     |  ___)  
+   | |  | | | | ____|  | |_____| |_____| |      
+   |_|  |_| |_|_____)  |_______)_______)_|      
+                                                
+        ___                                     
+       / __)                         _          
+     _| |__ ___   ____ ____  _____ _| |_        
+    (_   __) _ \ / ___)    \(____ (_   _)       
+      | | | |_| | |   | | | / ___ | | |_        
+      |_|  \___/|_|   |_|_|_\_____|  \__)       
+                                                
+</pre></div></center></body></font>
+
+
+<style>
+    body {
+      color: #FEFEFE;
+      background-color: #0c0d10;
+      margin: 0 auto;
+      padding: 1em 0 1em 0;
+    }
+       pre { font-family: "gohu", "Lucida Console", monospace, Monaco; font-size: 18px; line-height: 1.15; }
+         a { color: #93ffd7; text-decoration: none; }
+</style>
+</head>
+
+<body>
+<center><div style="display: inline-block; text-align: left;"><pre>
+
+Finally after few months I'm bringing a new post, this time we'll explore one of the
+most popular and used binary formats out there, we'll learn about <font color=#93ffd7>the ELF format.!</font>
+
+Originally, this was going to be <font color=#93ffd7>only 1 post</font>, but after a couple of days writing it,
+I realized that this post became the larger one I've written and it was not even the
+<font color=#93ffd7>40%</font> of the stuff I wanted to cover, so I decided to divide this into a series of 
+posts.
+
+Specifically, we'll explore what a <font color=#93ffd7>binary format</font> is, what the <font color=#93ffd7>ELF format is</font>, what it
+is used for, and in <font color=#93ffd7>this first post</font> of the series I'll explain in detail the first
+component of any ELF file, the <font color=#93ffd7>Executable Header</font>. 
+
+Then I'll show a utility called <font color=#93ffd7>readelf</font>, which is used to read all the information
+from any <font color=#93ffd7>ELF binary file</font>, to explore the executable header from a real binary.!
+
+So without further ado, let's go for it.!
+
+
+
+<h3><font color=#93ffd7>First of all, what's a file?</font></h3>
+In simple words, you can define a file as a <font color=#93ffd7>bunch of ordered bytes that holds some
+sort of data and represents something useful for us</font>, let's say, a text document, a
+picture, a video and so on.
+
+So, as simple as that, for your computer a file is just a bunch of bytes.
+
+Every person that uses a any sort of computer (a PC desktop, a laptop, even your
+smartphone) deals every day with all sort of files, but we see them as the <font color=#93ffd7>thing
+they represent</font>: a PDF file, a Word document, it might be a multimedia file such as 
+images or video as well. 
+
+
+
+<h3><font color=#93ffd7>So, what's a file format?</font></h3>
+Ok so, if files are just a bunch of bytes, <font color=#93ffd7>how do we differentiate them? Why is it 
+that you need to use specific programs to open specific files?</font>
+
+The thing is that the bytes that compose a file are not random bytes, they <font color=#93ffd7>follow
+a well defined order and structure</font> so computer programs can handle them.
+
+The<font color=#93ffd7> file format</font> is the <font color=#93ffd7>standard structure/encoding</font> that the bytes from a file shall
+follow to compose a valid file.
+
+That way, the file format for PDF files is just the way that the bytes from any PDF 
+file shall be structured to construct a valid PDF file.
+
+Same thing applies for Word documents, Excel data sheets, image files (png, jpg,
+...), and so on.
+
+The programs you use to open and modify your files expect that the file you are 
+trying to work with follows the required file format so it can be correctly
+processed. 
+
+Many file formats are described in a <font color=#93ffd7>specification document</font> to standarize such
+format and avoid to have many implementations for a single file format.
+
+
+
+<h3><font color=#93ffd7>Binary files and binary file formats.</font></h3>
+A binary file is just another type of file, with the singularity that this type of
+file <font color=#93ffd7>contains machine code, data and extra information</font> that your operating system
+can use to <font color=#93ffd7>execute it as a program</font>.
+
+The <font color=#93ffd7>binary file format</font>, or <font color=#93ffd7>the binary format</font>, is just <font color=#93ffd7>the format</font> that such data, 
+machine instructions and extra information from the file shall follow to be <font color=#93ffd7>handled
+and executed by your OS</font>.
+
+There is more than one binary format out there (I don't know how many binary
+formats exist indeed), where the <font color=#93ffd7>PE and the ELF</font> formats are the most popular ones.
+
+<font color=#93ffd7>PE</font> stands for <font color=#93ffd7>Portable Executable</font> and it's the main binary format used for <font color=#93ffd7>Windows
+binary files</font>. In the other hand, <font color=#93ffd7>ELF</font> stands for <font color=#93ffd7>Executable and Linkable Format</font> and
+it's a binary format used <font color=#93ffd7>on different platforms</font>, being (I think) <font color=#93ffd7>Linux</font> the most 
+popular one.
+
+Maybe I'll cover the PE format in a future post, but this time, we'll talk about
+the Executable and Linkable Format.
+
+
+
+<h3><font color=#93ffd7>The ELF format.</font></h3>
+As stated previously, <font color=#93ffd7>ELF</font> stands for <font color=#93ffd7>Executable and Linkable Format</font>, and it's the
+main and <font color=#93ffd7>default binary format on Linux systems</font>. 
+
+In simple terms, the ELF format is an <font color=#93ffd7>standarized file format</font> used on different
+platforms and it's used as a format for <font color=#93ffd7>different types of files</font>, not only binary
+files (I'll explain this).
+
+
+<h4><font color=#93ffd7>What is the ELF format used for?</font></h4>
+I already mentioned that the ELF format is the main binary format on Linux systems,
+but the ELF format is not exclusively used as a binary format. 
+
+The ELF format is used for the following type of files:
+
+    * <font color=#93ffd7>Binary files</font> (also known as executable files).
+    * <font color=#93ffd7>Object files</font> (also called relocatable files, this is the type of file you get
+      before the linking phase when compiling source code).
+    * <font color=#93ffd7>Shared libraries</font>.
+    * <font color=#93ffd7>Core dumps</font> (files used for storing memory dumps, register dumps, callbacks 
+      traces and so on when a crash occurs).
+
+It's important to mention that the ELF format is <font color=#93ffd7>not used only</font> on Linux systems,
+it's used on some <font color=#93ffd7>BSD</font> OSes, the <font color=#93ffd7>PS4</font>, the <font color=#93ffd7>Nintendo Wii</font>, on <font color=#93ffd7>firmware</font> for embedded
+devices and some other platforms. 
+
+So as you can see, the ELF format is widely used on different platforms and for
+different types of files. Notice that everything I'll be explaining here will be
+based on a Linux system :D.
+
+
+
+<h3><font color=#93ffd7>Components of an ELF file.</font></h3>
+An ELF file is composed basically of only <font color=#93ffd7>4 components</font>:
+
+    * An <font color=#93ffd7>executable header</font>.
+    * <font color=#93ffd7>Program headers</font> (optional).
+    * <font color=#93ffd7>Section headers</font> (optional).
+    * <font color=#93ffd7>Sections</font>.
+
+
+
+          <img src="assets/elf-format/ELF-file.png" alt="post-sample" width="700" height="1100" align=center>
+
+
+
+Let's explore the executable header first.
+
+
+
+<h3><font color=#93ffd7>The Executable Header.</font></h3>
+<font color=#93ffd7>Every ELF file</font>, regardless the type of ELF file it is, <font color=#93ffd7>starts with the Executable
+Header</font> (as you can see in the image above). The executable header is just a <font color=#93ffd7>series
+of bytes at the beginning of the ELF file</font> that contains information that gives you
+an <font color=#93ffd7>overall description</font> of the file in turn. Just by looking at the contents of the
+executable header you can have a general but very useful idea about the file you 
+are dealing with.
+
+The executable header gives you information such as <font color=#93ffd7>the type</font> of the file you are 
+dealing with, <font color=#93ffd7>the architecture</font> that the file was compiled for, you can even infer
+the <font color=#93ffd7>size of the entire file</font> just by inspecting this header.
+
+This header holds all the information in <font color=#93ffd7>specific bytes located at fixed and well
+defined positions within the header</font>. You can find the description of the executable
+header in the <font color=#93ffd7>ELF specification</font> or you can find it as well in the implementation
+provided by the file <font color=#93ffd7>/usr/include/elf.h</font> on any Linux system.
+
+
+
+      <img src="assets/elf-format/elf-struct-1.png" alt="Elf header def 1" width="760" height="350" align=center>
+
+
+
+Indeed, the file <font color=#93ffd7>/usr/include/elf.h</font> contains <font color=#93ffd7>all the definitions</font> used to parse 
+and hold all the contents from any ELF file, not only for its executable header 
+(but you can create your own definitions of course), and this file <font color=#93ffd7>follows the
+naming and structure defined in the ELF specification</font>, so everything in this 
+file is basically spec compliant.
+
+As you can see, the variables in the struct <font color=#93ffd7>Elf64_Ehdr</font> are of some weird types
+such as <font color=#93ffd7>Elf64_Half, Elf64_Adrr</font> and so on. Well the first thing I want to explain
+is that, there are some stuff that <font color=#93ffd7>differs between 32-bit ELF files and 64-bit
+ELF files</font>. One difference is that <font color=#93ffd7>the size</font> of the executable header is different
+for 32-bit and 64-bit ELF files and because of that the definitions in
+/usr/include/elf.h use typedefs for 32-bit and 64-bit files.
+
+You can see that in the name itself for the executable header, Elf64_Ehdr.
+
+That way, the struct named <font color=#93ffd7>Elf64_Ehdr</font> is the one specifically for <font color=#93ffd7>64-bit</font> files, 
+and in the other hand, we have the respective definition for 32-bit files:
+
+
+
+      <img src="assets/elf-format/elf-eh32-.png" alt="Elf header def 32-bits" width="760" height="350" align=center>
+
+
+
+And these are the definitions for all the <font color=#93ffd7>typedefs</font>:
+
+
+
+              <img src="assets/elf-format/typedefs-elf.png" alt="Elf typedefs" width="550" height="600" align=center>
+
+
+
+NOTE: For this post, I'll use the definitions for <font color=#93ffd7>64-bit ELF files</font>, but all the
+concepts can be applied for the respective definitions and values for 32-bit files.
+
+At this point, it might be confusing for you those structs and the definitions they
+hold, so let's explore all the fields from the executable header, one by one.
+
+
+<h4><font color=#93ffd7>e_ident.</font></h4>
+The <font color=#93ffd7>e_ident field is the first component you find in the executable header</font>, and
+thus, the e_ident is the <font color=#93ffd7>first thing you will find in every ELF file</font>.
+
+The e_ident field is not a single byte field, it's actually an <font color=#93ffd7>array of bytes</font> and
+there are different fields within the e_ident array that holds information about 
+the ELF file. 
+
+Specifically, the e_ident array is a <font color=#93ffd7>16-byte array</font>, and this e_ident array has the
+exact same structure and size for both 32-bit and 64-bit ELF files.
+
+The e_ident contains the following fields:
+
+    * The <font color=#93ffd7>'Magic Bytes'</font> (also known as magic value or magic numbers)
+    * <font color=#93ffd7>EI_CLASS</font>
+    * <font color=#93ffd7>EI_DATA</font>
+    * <font color=#93ffd7>EI_VERSION</font>
+    * <font color=#93ffd7>EI_OSABI</font>
+    * <font color=#93ffd7>EI_ABIVERSION</font>
+    * <font color=#93ffd7>EI_PAD</font>
+
+
+         <img src="assets/elf-format/e_ident_field.png" alt="Elf header def 1" width="690" height="350" align=center>
+
+
+
+So, let's explore all of those fields from the e_ident array.
+
+
+
+                <img src="assets/elf-format/e_ident-array.png" alt="e_ident array" width="550" height="300" align=center>
+
+
+
+
+
+<h4><font color=#93ffd7>Magic Bytes.</font></h4>
+The concept of <font color=#93ffd7>magic bytes</font> is commonly used for different file formats, not only 
+for binary formats or the ELF format itself. The magic bytes, or <font color=#93ffd7>magic numbers</font>,
+refer to the very <font color=#93ffd7>first bytes from a file</font>, where those bytes work as <font color=#93ffd7>an identifier</font>
+for an specific type of file format.
+
+For some file formats, their magic numbers are the first <font color=#93ffd7>2 bytes</font> of the file, in 
+other cases the first <font color=#93ffd7>3 bytes</font> from the file are the magic bytes.
+
+You can see <a href=https://en.wikipedia.org/wiki/List_of_file_signatures>here</a> a list of several files and their magic numbers.
+
+The magic bytes for every ELF file are the first <font color=#93ffd7>4 bytes of the file</font>, and they are: 
+<font color=#93ffd7>0x7f, 0x45, 0x4c and 0x46</font>, in that exact same order.
+
+The first byte, <font color=#93ffd7>0x7f</font>, has no printable character, but the other 3 bytes are the
+<font color=#93ffd7>ASCII values</font> for the characters <font color=#93ffd7>'E', 'L' and 'F'</font>. Which, unsurprisingly, forms the
+word <font color=#93ffd7>ELF</font>.
+
+
+<h4><font color=#93ffd7>e_ident[EI_CLASS]</font></h4>
+After the magic bytes, we have the <font color=#93ffd7>EI_CLASS</font> byte. This field specifies if the file
+is a <font color=#93ffd7>32-bit or a 64-bit architecture</font> ELF file.
+
+If the file is a <font color=#93ffd7>32-bit</font> arch file, EI_CLASS byte holds the constant value <font color=#93ffd7>ELFCLASS32
+which is equals to 1</font>. 
+
+In the other hand, for <font color=#93ffd7>64-bit</font> files, EI_CLASS byte holds the constant <font color=#93ffd7>ELFCLASS64
+which is equal to 2</font>.
+
+This is the byte at <font color=#93ffd7>index 4</font> in the e_ident array, as you can see in the image above.
+
+
+<h4><font color=#93ffd7>e_ident[EI_DATA]</font></h4>
+The next byte is the <font color=#93ffd7>EI_DATA</font> byte, this field indicates the <font color=#93ffd7>endianess</font> of the file.
+
+For <font color=#93ffd7>little-endian</font>, this bytes holds the constant value <font color=#93ffd7>ELFDATA2LSB, which is equal
+to 1</font>. Notice that LSB stands for Least Significant Byte. 
+
+For <font color=#93ffd7>big-endian</font>, this bytes holds the constant value <font color=#93ffd7>ELFDATA2MSB, which is equal to 2
+</font>Notice that MSB stands for Most Significant Byte in this case.
+
+This is the byte at <font color=#93ffd7>index 5</font> in the e_ident array.
+
+If you are not familiar with the words endianess, little-endian or big-endian, 
+checkout this <a href=https://www.freecodecamp.org/news/what-is-endianness-big-endian-vs-little-endian/>site over here.</a>
+
+In simple terms, the endianess is <font color=#93ffd7>the order in which the bytes are stored in memory</font>. 
+For little-endian the <font color=#93ffd7>Least Significant Byte</font> is located at the <font color=#93ffd7>lowest memory address</font>,
+whereas for big-enddian, the <font color=#93ffd7>Most Significant Byte</font> is located at the <font color=#93ffd7>lowest memory
+address.</font>
+
+
+
+                  <img src="assets/elf-format/endianess.png" alt="Endianess" width="550" height="300" align=center>
+
+
+
+Something important you need to understand is that the endianess <font color=#93ffd7>applies to the 
+bytes, not to the bits</font>. I mention this because not all the articles out there about 
+endianess make this clarification :D.
+
+
+<h4><font color=#93ffd7>e_ident[EI_VERSION]</font></h4>
+Then we have the <font color=#93ffd7>EI_VERSION</font> byte, this byte specifies the <font color=#93ffd7>version of the ELF
+specification</font> used to create the file. The good news is that <font color=#93ffd7>there's only one 
+possible valid value</font> for this byte, which is the constant <font color=#93ffd7>EV_CURRENT, and it's equals
+to 1</font>.
+
+As simple as that, there's nothing more about this byte, and as you can see, this 
+byte is at <font color=#93ffd7>index 6</font> in the e_ident array.
+
+
+<h4><font color=#93ffd7>e_ident[EI_OSABI]</font></h4>
+The <font color=#93ffd7>EI_OSABI</font> byte might be quite tricky if you are not familiar with the term <font color=#93ffd7>ABI</font>.
+
+Going right to the point, this field indicates for which <font color=#93ffd7>ABI and OS the file was 
+built for</font>.
+
+ABI stands for <font color=#93ffd7>Application Binary Interface</font>, the way it works can be compared against
+how <font color=#93ffd7>APIs</font> works. I didn't find a better way to explain this than how it's explained in 
+<a href=https://stackoverflow.com/questions/2171177/what-is-an-application-binary-interface-abi>this answer from StackOverflow</a>.
+
+Anyways, the most common value for this byte out there is <font color=#93ffd7>zero</font>, which is kind of <font color=#93ffd7>the 
+default value</font> and it indicates that the file was built using the <font color=#93ffd7>UNIX System V ABI</font>.
+
+If this byte is not equals 0, this means that the file was built for an <font color=#93ffd7>specific OS 
+which has an specific ABI</font>.
+
+This byte is at <font color=#93ffd7>index 7</font> in the e_ident array. You can find all the other possible 
+values for this field in the already mentioned file <font color=#93ffd7>/usr/include/elf.h</font>:
+
+
+
+            <img src="assets/elf-format/OSABI-defs.png" alt="OSABI defs" width="640" height="360" align=center>
+
+
+
+<h4><font color=#93ffd7>e_ident[EI_ABIVERSION]</font></h4>
+This byte kind of complements the <font color=#93ffd7>EI_OSABI</font> byte. This byte indicates the specific 
+<font color=#93ffd7>version of the OS ABI</font> that was specified in EI_OSABI.
+
+If the EI_OSABI byte is set as 0, the <font color=#93ffd7>EI_ABIVERSION</font> will be set to <font color=#93ffd7>0</font> as well.
+
+Based on what I've researched, <font color=#93ffd7>the EI_OSABI and EI_ABIVERSION bytes are set to 0 in 
+most cases out there in the wild</font>, and so far, after playing around with different
+binaries, I've always seen these fields set to 0.
+
+EI_ABIVERSION is located at <font color=#93ffd7>index 8</font> in the e_ident array.
+
+<h4><font color=#93ffd7>e_ident[EI_PAD]</font></h4>
+The <font color=#93ffd7>EI_PAD</font> field is not a single byte field, instead, this is an array which goes
+from <font color=#93ffd7>index 9 through 15</font> in the e_ident array, being this the <font color=#93ffd7>last part/field in 
+e_ident</font>. 
+
+EI_PAD array currently works as padding, where all its bytes are set to <font color=#93ffd7>zero</font>.
+
+This bytes are currently reserved for possible usage in the future.
+
+
+One last view at e_ident array:
+
+
+                <img src="assets/elf-format/e_ident-array.png" alt="e_ident array" width="550" height="300" align=center>
+
+
+
+Ok, so far we already saw the <font color=#93ffd7>e_ident array and all the fields it contains</font>, but 
+remember, the e_ident array is just the <font color=#93ffd7>first field</font> in the entire executable header.
+Now, let's move to the next fields in the executable header. The next field is the
+e_type field.
+
+
+
+<h4><font color=#93ffd7>e_type</font></h4>
+After the e_ident array, we have the <font color=#93ffd7>e_type</font> field in the executable header.
+
+
+
+        <img src="assets/elf-format/e_type_field.png" alt="e_type field def." width="690" height="350" align=center>
+
+
+
+The e_type field in the executable header specifies the <font color=#93ffd7>type of ELF file</font> you are 
+dealing with. Remember that the ELF format is used <font color=#93ffd7>not only for binary files</font>, it is
+used for other type of files such as <font color=#93ffd7>relocatable object files, executables, core dumps</font>
+and so on.
+
+Well, this field tells you which type of ELF file you are working with.
+
+Some of the types defined in the ELF spec are:
+
+    * <font color=#93ffd7>ET_REL</font>: used for <font color=#93ffd7>relocatable</font> object files.
+    * <font color=#93ffd7>ET_DYN</font>: used for <font color=#93ffd7>shared objects or executables</font> that are not statically
+      compiled. 
+    * <font color=#93ffd7>ET_EXEC</font>: used for <font color=#93ffd7>executable</font> files.
+
+You can find all the possible values for the e_type field in the already mentioned 
+file /usr/include/elf.h:
+
+
+
+          <img src="assets/elf-format/e_type_valid_values.png" alt="e_type valid values" width="690" height="270" align=center>
+
+
+
+<h4><font color=#93ffd7>e_machine</font></h4>
+Then, we have the <font color=#93ffd7>e_machine</font> field in the executable header.
+
+
+
+         <img src="assets/elf-format/e_machine_field.png" alt="e_machine field def." width="690" height="350" align=center>
+
+
+
+This field indicates the <font color=#93ffd7>specific architecture</font> that the file was build for.
+
+Note that this field <font color=#93ffd7>not only indicates if the file is for a 32-bit or a 64-bit arch,
+it specifies the CPU as well</font>.
+
+Some values for this field are the constants <font color=#93ffd7>EM_X86_64</font> (x86_64 architecture), <font color=#93ffd7>EM_386</font> 
+(x86 architecture), <font color=#93ffd7>EM_ARM</font> (ARM architecture) and so on.
+
+Just as explained with other fields, you can find all the possible values for the 
+e_machine field in the file /usr/include/elf.h. This time I'll leave just the first
+values listed in elf.h because currently there are like <font color=#93ffd7>150 different</font>, more or less, 
+supported architectures that uses the ELF format, either for binary files, shared 
+objects, core dumps, etc.
+
+
+
+               <img src="assets/elf-format/e_machine_values.png" alt="e_machine field values." width="580" height="650" align=center>
+
+
+
+<h4><font color=#93ffd7>e_version</font></h4>
+Following the e_machine, we have the <font color=#93ffd7>e_version</font> field.
+
+
+
+         <img src="assets/elf-format/e_version_field.png" alt="e_version field." width="690" height="350" align=center>
+
+
+
+This field gives the exact <font color=#93ffd7>same information</font> that the <font color=#93ffd7>EI_VERSION</font> byte from e_ident
+array gives, it specifies <font color=#93ffd7>the version of the ELF specification</font> used to create the
+file in turn. So there's nothing more special about the e_version.
+
+
+
+<h4><font color=#93ffd7>e_entry</font></h4>
+The next field in the executable header is the <font color=#93ffd7>e_entry</font>.
+
+
+
+         <img src="assets/elf-format/e_entry_field.png" alt="e_entry field." width="690" height="350" align=center>
+
+
+
+This field is used to specify the <font color=#93ffd7>entry point</font> of the binary when it gets <font color=#93ffd7>loaded into
+memory for execution</font>.
+
+In simple words, when your OS and another program called the interpreter loads a 
+binary into memory, <font color=#93ffd7>the location of the first instruction</font> from the binary that needs 
+to be executed is <font color=#93ffd7>the entry point</font> of that binary, which is a <font color=#93ffd7>virtual memory address</font>.
+
+When a program is loaded into memory, it doesn't use <font color=#93ffd7>physical memory addresses</font> to 
+store/fetch data and instructions. The OS provides all the processes with the<font color=#93ffd7> "same
+amount of memory" using a mechanism called paging</font>.
+
+With this mechanism, all the processes <font color=#93ffd7>"see"</font> that they have <font color=#93ffd7>all the memory from the 
+system available</font> for them, but in reality, that's not the case, since they are 
+sharing the available physical memory between them, but the OS makes them 'think' 
+they have all the resources at their disposal by providing them with <font color=#93ffd7>virtual memory</font>, 
+instead of actual physical memory.
+
+
+
+<h4><font color=#93ffd7>e_phoff and e_shoff</font></h4>
+The following two fields share some similarities, so I'll explain them at the same 
+time, and they are the <font color=#93ffd7>e_phoff field and the e_shoff</font> field:
+
+
+          <img src="assets/elf-format/e_phoff_e_shoff.png" alt="e_phoff and e_shoff fields." width="690" height="350" align=center>
+
+
+
+Now, before explain what these fields indicate, I need to give a brief introduction
+to other components of any ELF file: <font color=#93ffd7>section and segments</font>.
+
+Remember that I already mentioned that ELF files are composed basically of only 4 
+components: the executable header (which we are exploring right now), sections, 
+program headers and section headers.
+
+The ELF specification defines sections and segments, now even when both words can be
+used interchangeably, they are used for <font color=#93ffd7>different things in an ELF file</font>.
+
+Both segments and sections refers to <font color=#93ffd7>portions of the ELF file</font>.
+
+<font color=#93ffd7>Sections is how the linker</font>, the program that perform the last stage in the compilation
+process, which is actually called linking, and other static tools, <font color=#93ffd7>see and divide</font> the
+ELF file to work with it. 
+
+In the other hand, <font color=#93ffd7>segments is how the interpetrer and the OS</font> see and divide the 
+binary file in order to <font color=#93ffd7>organize it in memory when it gets loaded for execution</font>.
+
+That way, segments and sections are just <font color=#93ffd7>different ways to see different portions of 
+the same ELF file</font>. It might be that a segment contains more than one section on it,
+just because the segment view of a portion of the ELF file intersects with the section
+view of that portion of the ELF file.
+
+The main difference is that <font color=#93ffd7>segments are used for execution</font>, while <font color=#93ffd7>sections are used
+for static tasks</font> such as linking or parsing the contents of an ELF file by a program 
+(such as readelf, which we are going see at the end of this post).
+
+I leave the following images so you can see what I'm trying to explain.
+
+
+
+                 <img src="assets/elf-format/segments-vs-sections1.jpg" alt="e_phoff and e_shoff fields." width="500" height="500" align=center>
+
+
+And another one <font color=#93ffd7>:P</font>
+
+
+                    <img src="assets/elf-format/segments-vs-sections2.jpg" alt="e_phoff and e_shoff fields." width="430" height="320" align=center>
+
+
+
+Well, as you can see, we can have several sections and segments in an ELF file. <font color=#93ffd7>In
+order to find them and work with them</font>, the ELF spec defines <font color=#93ffd7>section headers and
+program headers</font>.
+
+In the spec, <font color=#93ffd7>program headers refer to segments</font>.
+
+<font color=#93ffd7>Each section has its section header, and the same applies to segments,</font> where each
+header provides all the information needed to <font color=#93ffd7>describe and define its respective
+section/segment within the ELF file.</font>
+
+<font color=#93ffd7>All section headers</font> are grouped into the <font color=#93ffd7>section header table</font>, and <font color=#93ffd7>all program 
+headers</font> are grouped into the <font color=#93ffd7>program header table</font>.
+
+So, if the section header table and the program header table contains all the section 
+headers and all the program headers, respectively, and each header provides the 
+information to find the respective section or segment, how do we find those tables?
+
+Well, the the <font color=#93ffd7>e_phoff and the e_shoff</font> gives you the answer.
+
+<font color=#93ffd7>The e_phoff indicates the location of the program header table</font> within the ELF file, 
+whereas <font color=#93ffd7>the e_shoff indicates the location of the section header table</font> within the ELF
+file.
+
+phoff stands for program header offset, and shoff stands for section header offset. 
+
+Both fields contains an <font color=#93ffd7>offset</font>, in bytes, at which you will find the respective header
+table. 
+
+Notice that this offset is within the file, not a location in virtual memory as it was
+the case for the e_entry field.
+
+I know that explanation about segments and sections sucks <font color=#93ffd7>:(</font>. I'm working in the
+second part of this post where I'll explain with more details segments and sections
+;).
+
+
+
+<h4><font color=#93ffd7>e_flags</font></h4>
+Then we have the <font color=#93ffd7>e_flags</font> field.
+
+
+
+         <img src="assets/elf-format/e_flags_field.png" alt="e_flags field." width="690" height="350" align=center>
+
+
+
+This field is used to provide <font color=#93ffd7>flags</font> that are <font color=#93ffd7>specific to the arch</font> for which the ELF
+file was created for. For x86 and x86_64 arch, this field <font color=#93ffd7>is tipically set to zero</font>, 
+but for other architectures this is not the case.
+
+I haven't seen any specific values for this field so far.
+
+
+
+<h4><font color=#93ffd7>e_ehsize</font></h4>
+Here is another easy one, it's time to see the <font color=#93ffd7>e_ehsize</font> field.
+
+
+
+      <img src="assets/elf-format/e_ehsize-_field.png" alt="e_ehsize field." width="690" height="350" align=center>
+
+
+
+This field indicates the <font color=#93ffd7>size, in bytes, of the executable header</font>.
+
+As I already mentioned, it turns out that the size of the executable header differs
+between 32-bit and 64-bit ELF files.
+
+The size of the executable header for <font color=#93ffd7>32-bit ELF files is 52 bytes</font>.
+
+The size of the executable header for <font color=#93ffd7>64-bit ELF files is 64 bytes</font>.
+
+
+
+<h4><font color=#93ffd7>e_phentsize</font></h4>
+After the e_ehsize we have the <font color=#93ffd7>e_phentsize</font>.
+
+
+
+      <img src="assets/elf-format/e_phentsize_field.png" alt="e_phentsize field." width="690" height="350" align=center>
+
+
+
+e_phentsize stands for <font color=#93ffd7>'program header entry size'</font>.
+
+This field indicates <font color=#93ffd7>the size, in bytes, of each individual program header</font> in the 
+program header table.
+
+
+
+<h4><font color=#93ffd7>e_phnum</font></h4>
+Then we have the <font color=#93ffd7>e_phnum</font>, which gives us the final piece of information to work with 
+<font color=#93ffd7>the program headers and segments</font>.
+
+
+
+      <img src="assets/elf-format/e_phnum_field.png" alt="e_phnum field." width="690" height="350" align=center>
+
+
+
+This field indicates <font color=#93ffd7>how many program headers there are</font> in the program header table. 
+Now we know where to find the program header table with e_phoff, we know as well the
+size of each program header by reading e_phentsize, and now we know how many program
+headers are present in the program header table. 
+
+With this information, we can parse fully the program header table and access each 
+program header, which gives us a complete description about their respective segment.
+
+
+
+<h4><font color=#93ffd7>e_shentsize and e_shnum</font></h4>
+I'll explain the next fields at the same time, this fields serves the same function
+as the 2 previous fields but applied to the section header table, <font color=#93ffd7>the e_shentsize and 
+e_shnum</font> fields.
+
+
+
+      <img src="assets/elf-format/e_shentsize_e_shnum_fields.png" alt="e_shentsize and e_shnum" width="690" height="350" align=center>
+
+
+
+As mentioned, this fields are <font color=#93ffd7>analogous to the 2 previous explained</font> fields.
+
+The <font color=#93ffd7>e_shentsize specifies the size, in bytes, of each section header</font> in the section 
+header table, and <font color=#93ffd7>e_shnum indicates how many headers there are</font> in the section header
+table.
+
+With this we have all the information needed to work with <font color=#93ffd7>the section header table,
+section headers and with sections</font> in our ELF file.
+
+
+
+<h4><font color=#93ffd7>e_shstrndx</font></h4>
+And then, after a long journey, we reached the <font color=#93ffd7>last field</font> in the our executable 
+header, the <font color=#93ffd7>e_shstrndx</font> field.
+
+
+
+      <img src="assets/elf-format/e_shstrndx_field.png" alt="e_shstrndx field" width="690" height="350" align=center>
+
+
+
+The <font color=#93ffd7>e_shstrndx</font> field is an <font color=#93ffd7>index in the section header table</font>, with this index you 
+access a section header entry and this section header belongs to a section called 
+<font color=#93ffd7>.shstrtab</font>.
+
+The <font color=#93ffd7>.shstrtab</font> is a section that contains a kind of <font color=#93ffd7>'table' of null terminated ASCII
+strings</font>, where those strings are actually all the <font color=#93ffd7>names of the sections</font> that the ELF 
+file contains.
+
+This field is mostly used by analysis tools to identify the names of all the sections
+that are present in the ELF file.
+
+
+
+So, know that you see the following image, you might have a better idea of what you 
+are looking at:
+
+
+
+           <img src="assets/elf-format/ELF-file.png" alt="post-sample" width="700" height="1100" align=center>
+
+
+
+At least you might have a better idea of the executable header and more or less a
+basic idea about sections and segments.
+
+
+
+<h3><font color=#93ffd7>Reading the executable header: using readelf.</font></h3>
+Now that we already explore the executable header from the theory, let's now see how
+we can read the contents from the executable header from a real ELF binary file.
+
+For this example, let's use the GNU utility <font color=#93ffd7>cat</font>, which just prints to console the 
+contents of a file or the input from the user if no file input is used.
+
+Let's find the exact location of cat by using the command:
+
+
+<font color=#93ffd7>┌</font>                             <font color=#93ffd7>┐</font>
+<font color=#93ffd7>│</font>   <font color=#93ffd7>$</font> which cat               <font color=#93ffd7>│</font>
+<font color=#93ffd7>└</font>                             <font color=#93ffd7>┘</font>
+
+
+
+          <img src="assets/elf-format/which-cat.png" alt="post-sample" width="500" height="140" align=center>
+
+
+
+<h4><font color=#93ffd7>readelf utility.</font></h4>
+In order to read the executable header from a real binary, we'll use the utility 
+called <font color=#93ffd7>readelf</font>.
+
+As stated on its <font color=#93ffd7>man page</font>:
+
+
+<font color=#93ffd7>┌</font>                             <font color=#93ffd7>┐</font>
+<font color=#93ffd7>│</font>   <font color=#93ffd7>$</font> man readelf             <font color=#93ffd7>│</font>
+<font color=#93ffd7>└</font>                             <font color=#93ffd7>┘</font>
+
+<font color=#93ffd7>┌</font>
+<font color=#93ffd7>│</font> DESCRIPTION
+<font color=#93ffd7>│</font> 
+<font color=#93ffd7>│</font>       readelf displays information about one or more ELF format object 
+<font color=#93ffd7>│</font>       files.  The options control what particular information to display.
+<font color=#93ffd7>│</font> 
+<font color=#93ffd7>│</font>       elffile... are the object files to be examined.  32-bit and 64-bit 
+<font color=#93ffd7>│</font>       ELF files are supported, as are archives containing ELF files.
+<font color=#93ffd7>│</font> 
+<font color=#93ffd7>│</font>       This program performs a similar function to objdump but it goes 
+<font color=#93ffd7>│</font>       into more detail and it exists independently of the BFD library, so
+<font color=#93ffd7>│</font>       if there is a bug in BFD then readelf will not be affected.
+<font color=#93ffd7>│</font> 
+<font color=#93ffd7>└</font>
+
+
+So, if we want to read the executable header from our binary, cat for our example,
+the command we shall use is:
+
+
+<font color=#93ffd7>┌</font>                                 <font color=#93ffd7>┐</font>
+<font color=#93ffd7>│</font>   <font color=#93ffd7>$</font> readelf -h /usr/bin/cat     <font color=#93ffd7>│</font>
+<font color=#93ffd7>└</font>                                 <font color=#93ffd7>┘</font>
+
+
+
+         <img src="assets/elf-format/readelf-cat.png" alt="readelf cat" width="670" height="450" align=center>
+
+
+
+The output you see in readelf is the following:
+
+
+<font color=#93ffd7>┌</font>
+<font color=#93ffd7>│</font>
+<font color=#93ffd7>│</font> <font color=#93ffd7>Magic</font>:     In this field you can see all the e_ident array.
+<font color=#93ffd7>│</font> <font color=#93ffd7>Class</font>:     e_ident[EI_CLASS] byte
+<font color=#93ffd7>│</font> <font color=#93ffd7>Data</font>:      e_ident[EI_DATA] byte
+<font color=#93ffd7>│</font> <font color=#93ffd7>Version</font>:   e_ident[EI_VERSION] byte
+<font color=#93ffd7>│</font> <font color=#93ffd7>OS/ABI</font>:    e_ident[EI_OSABI] byte
+<font color=#93ffd7>│</font> <font color=#93ffd7>ABI Version</font>: e_ident[EI_CLASS] byte
+<font color=#93ffd7>│</font> <font color=#93ffd7>Type</font>:      e_type field
+<font color=#93ffd7>│</font> <font color=#93ffd7>Machine</font>:   e_machine
+<font color=#93ffd7>│</font> <font color=#93ffd7>Version</font>:   e_version
+<font color=#93ffd7>│</font> <font color=#93ffd7>Entry point address</font>: e_entry
+<font color=#93ffd7>│</font> <font color=#93ffd7>Start of program headers</font>:  e_phoff
+<font color=#93ffd7>│</font> <font color=#93ffd7>Start of section headers</font>:  e_shoff
+<font color=#93ffd7>│</font> <font color=#93ffd7>Flags</font>:                     e_flags
+<font color=#93ffd7>│</font> <font color=#93ffd7>Size of this header</font>:       e_ehsize
+<font color=#93ffd7>│</font> <font color=#93ffd7>Size of program headers</font>:   e_phentsize
+<font color=#93ffd7>│</font> <font color=#93ffd7>Number of program headers</font>: e_phnum
+<font color=#93ffd7>│</font> <font color=#93ffd7>Size of section headers</font>:   e_shentsize
+<font color=#93ffd7>│</font> <font color=#93ffd7>Number of section headers</font>: e_shnum
+<font color=#93ffd7>│</font> <font color=#93ffd7>Section header string table index</font>: e_shstrndx
+<font color=#93ffd7>│</font>
+<font color=#93ffd7>└</font>
+
+And finally, in order to see the contents of the section pointed by the e_shstrndx
+field, just use the command:
+
+
+<font color=#93ffd7>┌</font>                                           <font color=#93ffd7>┐</font>
+<font color=#93ffd7>│</font>   <font color=#93ffd7>$</font> readelf -x .shstrtab /usr/bin/cat     <font color=#93ffd7>│</font>
+<font color=#93ffd7>└</font>                                           <font color=#93ffd7>┘</font>
+
+
+
+         <img src="assets/elf-format/shstrtab-section.png" alt="shstrtab section" width="670" height="550" align=center>
+
+
+
+<h3><font color=#93ffd7>Conclusion.</font></h3>
+Puff, what a long journey.! and this is just the beginning lol.
+
+So far we already explore one of the components of any ELF file, the executable
+header, we explored all the contents from it and how to read them from a real binary.
+
+In the second part of this series, I'll dive deep into section headers, I'll explain 
+in more detail the difference between sections and segments and, maybe, I'll explain
+some specific sections from an ELF binary file (spoiler, I didn't :D).
+
+
+
+<h3><font color=#93ffd7>References.</font></h3>
+    <a href=https://flint.cs.yale.edu/cs422/doc/ELF_Format.pdf>[*] ELF_Format (article from Yale).</a>
+    <a href=https://en.wikipedia.org/wiki/Core_dump>[*] Core dump.</a>
+    <a href=https://en.wikipedia.org/wiki/Binary_file>[*] Binary file.</a>
+    <a href=https://en.wikipedia.org/wiki/List_of_file_signatures>[*] Common file magic values.</a> 
+    <a href=https://www.freecodecamp.org/news/what-is-endianness-big-endian-vs-little-endian/>[*] Endianess.</a>
+    <a href=https://stackoverflow.com/questions/2171177/what-is-an-application-binary-interface-abi>[*] What's the ABI?</a>
+    <font color=#93ffd7>[*] Practical Binary Analysis book</font>
+
+
+
+
+
+
+</pre></div></center></body></html>
+
